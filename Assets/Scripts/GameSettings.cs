@@ -6,6 +6,8 @@ namespace Malyglut.CubitWorld
     [CreateAssetMenu(fileName = "Game Settings", menuName = "Cubit World/Game Settings", order = 0)]
     public class GameSettings : ScriptableObject
     {
+        private const float CUBIT_PLACEMENT_TOLERANCE = 0.0000025f;
+        
         [SerializeField]
         private float _cubitSize = 1f;
         
@@ -21,6 +23,7 @@ namespace Malyglut.CubitWorld
                 if (_cubeMaxExtents <= 0)
                 {
                     _cubeMaxExtents = _cubitSize / _cubeSize;
+                    _cubeMaxExtents += CUBIT_PLACEMENT_TOLERANCE;
                 }
 
                 return _cubeMaxExtents;

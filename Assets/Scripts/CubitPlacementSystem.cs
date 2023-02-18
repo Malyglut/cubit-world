@@ -41,10 +41,10 @@ namespace Malyglut.CubitWorld
         private bool IsCubitInsideCube(Cube targetCube, Cubit cubit)
         {
             var newCubitLocalPosition = targetCube.transform.InverseTransformPoint(cubit.transform.position);
-
-            var isInsideCube = Mathf.Abs(newCubitLocalPosition.x) <= _gameSettings.CubeMaxExtents
-                               && Mathf.Abs(newCubitLocalPosition.y) <= _gameSettings.CubeMaxExtents
-                               && Mathf.Abs(newCubitLocalPosition.z) <= _gameSettings.CubeMaxExtents;
+            
+            var isInsideCube =  Mathf.Abs(newCubitLocalPosition.x) <= _gameSettings.CubeMaxExtents
+                                && Mathf.Abs(newCubitLocalPosition.y) <= _gameSettings.CubeMaxExtents
+                                && Mathf.Abs(newCubitLocalPosition.z) <= _gameSettings.CubeMaxExtents;
 
             return isInsideCube;
         }
