@@ -17,17 +17,21 @@ namespace Malyglut.CubitWorld
         private List<Cubit> _cubits = new();
 
         [Button]
-        private void CombineMeshes()
+        public void CombineMeshes()
         {
             var originalPosition = transform.position;
+            var originalScale = transform.localScale;
+            
             transform.position = Vector3.zero;
+            transform.localScale = Vector3.one;
 
-            CombineCubits();
+            CombineCubitMeshes();
 
             transform.position = originalPosition;
+            transform.localScale = originalScale;
         }
 
-        private void CombineCubits()
+        private void CombineCubitMeshes()
         {
             var cubitsSorted = new Dictionary<CubitData, List<Cubit>>();
             var cubitMaterials = new Dictionary<CubitData, Material>();

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace Malyglut.CubitWorld
@@ -56,6 +57,15 @@ namespace Malyglut.CubitWorld
             
             cube.name = $"Cube [{cubePosition.x}, {cubePosition.y}, {cubePosition.z}]";
             _cubes.Add(cubePosition, cube);
+        }
+
+        [Button]
+        private void CombineCubeMeshes()
+        {
+            foreach (var cube in _cubes.Values)
+            {
+                cube.CombineMeshes();
+            }
         }
     }
 }
