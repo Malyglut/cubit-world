@@ -8,8 +8,7 @@ namespace Malyglut.CubitWorld
 {
     public class Cube : MonoBehaviour
     {
-        public event Action<Cube> OnDestroy; 
-
+        public event Action<Cube> OnDestroy;
 
         [SerializeField]
         private MeshFilter _meshFilter;
@@ -23,8 +22,11 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private List<Cubit> _cubits = new();
 
+        private readonly Dictionary<CubitData, int> _cubitsReward = new();
         private float _destructionStartTime;
         private bool _isBeingDestroyed;
+        
+        public IReadOnlyDictionary<CubitData, int> CubitsReward => _cubitsReward;
 
         private void Awake()
         {
@@ -39,12 +41,24 @@ namespace Malyglut.CubitWorld
         public void Add(Cubit cubit)
         {
             _cubits.Add(cubit);
+
+            if (!_cubitsReward.ContainsKey(cubit.Data))
+            {
+                _cubitsReward.Add(cubit.Data, 0);
+            }
+
+            _cubitsReward[cubit.Data]++;
         }
 
         public void StartDestruction()
         {
             _destructionStartTime = Time.time;
             _isBeingDestroyed = true;
+        }
+
+        public void StopDestruction()
+        {
+            _isBeingDestroyed = false;
         }
 
         private void Update()
@@ -63,7 +77,6 @@ namespace Malyglut.CubitWorld
         private void DestroyCube()
         {
             Debug.Log("Cube destroyed");
-            Debug.Log($"Player awarded {_cubits.Count} cubits");
 
             OnDestroy.Invoke(this);
             

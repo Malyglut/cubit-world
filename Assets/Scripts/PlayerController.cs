@@ -21,13 +21,19 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private CubitPlacementSystem _placement;
 
+        private PlayerInventory _playerInventory;
         private bool _destroyingCube;
         private Cube _targetCube;
+
+        private void Awake()
+        {
+            _playerInventory = new PlayerInventory();
+        }
 
         private void Update()
         {
             ProcessInput();
-            HandleCubeDestruction();
+            HandleCubeDestructionProgress();
         }
 
         private void ProcessInput()
@@ -57,7 +63,7 @@ namespace Malyglut.CubitWorld
             }
         }
 
-        private void HandleCubeDestruction()
+        private void HandleCubeDestructionProgress()
         {
             if (!_destroyingCube)
             {
@@ -81,6 +87,25 @@ namespace Malyglut.CubitWorld
         private void StopDestroyingCube()
         {
             _destroyingCube = false;
+
+            _targetCube.OnDestroy -= HandleCubeDestroyed;
+            _targetCube.StopDestruction();
+
+            _targetCube = null;
+        }
+
+        private void HandleCubeDestroyed(Cube cube)
+        {
+            var cubitsReward = cube.CubitsReward;
+            
+            foreach (var cubitData in cubitsReward.Keys)
+            {
+                _playerInventory.Add(cubitData, cubitsReward[cubitData]);
+            }
+
+            _destroyingCube = false;
+            
+            _targetCube.OnDestroy -= HandleCubeDestroyed;
             _targetCube = null;
         }
 
@@ -95,6 +120,8 @@ namespace Malyglut.CubitWorld
             _destroyingCube = true;
             
             _targetCube = cube;
+
+            _targetCube.OnDestroy += HandleCubeDestroyed;
             _targetCube.StartDestruction();
         }
 

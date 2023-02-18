@@ -34,8 +34,8 @@ namespace Malyglut.CubitWorld
                 parentCube = _grid[adjacentCubePosition];
             }
 
-            parentCube.Add(newCubit);
             newCubit.Initialize(cubitData, parentCube);
+            parentCube.Add(newCubit);
         }
 
         private bool IsCubitInsideCube(Cube targetCube, Cubit cubit)
