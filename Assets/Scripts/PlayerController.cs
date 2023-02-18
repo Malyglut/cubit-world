@@ -1,21 +1,17 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Malyglut.CubitWorld
 {
     public class PlayerController : MonoBehaviour
     {
         private const float RAYCAST_MAX_DISTANCE = 500000f;
-        
+
         [SerializeField]
         private LayerMask _cubitsLayer;
-        
-        [SerializeField]
-        private LayerMask _cubesLayer;
 
         [SerializeField]
         private Camera _camera;
-        
+
         [SerializeField]
         private float _moveSpeed = 2f;
 
@@ -25,35 +21,95 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private CubitPlacementSystem _placement;
 
+        private bool _destroyingCube;
+        private Cube _targetCube;
+
         private void Update()
+        {
+            ProcessInput();
+            HandleCubeDestruction();
+        }
+
+        private void ProcessInput()
         {
             if (Input.GetMouseButtonDown(1))
             {
-                var ray = new Ray(_camera.transform.position, _camera.transform.forward);
-                
+                var raycastHit = RaycastCubits();
 
-                    if (Physics.Raycast(ray, out var cubitHit, RAYCAST_MAX_DISTANCE, _cubitsLayer))
-                    {
-                        var targetCubit = cubitHit.transform.GetComponentInParent<Cubit>();
-                        _placement.PlaceCubit(targetCubit, cubitHit.normal, _selectedCubit);
-                    }
-                
+                if (raycastHit.HasValue)
+                {
+                    var hit = raycastHit.Value;
+                    var targetCubit = hit.transform.GetComponentInParent<Cubit>();
+                    _placement.PlaceCubit(targetCubit, hit.normal, _selectedCubit);
+                }
             }
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                var raycastHit = RaycastCubits();
+
+                if (raycastHit.HasValue)
+                {
+                    var hit = raycastHit.Value;
+                    var targetCubit = hit.transform.GetComponentInParent<Cubit>();
+                    StartDestroyingCube(targetCubit.Cube);
+                }
+            }
+        }
+
+        private void HandleCubeDestruction()
+        {
+            if (!_destroyingCube)
+            {
+                return;
+            }
+            
+            if (Input.GetMouseButtonUp(0))
+            {
+                StopDestroyingCube();
+                return;
+            }
+
+            var raycastHit = RaycastCubits();
+
+            if (!raycastHit.HasValue)
+            {
+                StopDestroyingCube();
+            }
+        }
+
+        private void StopDestroyingCube()
+        {
+            _destroyingCube = false;
+            _targetCube = null;
+        }
+
+        private RaycastHit? RaycastCubits()
+        {
+            var ray = new Ray(_camera.transform.position, _camera.transform.forward);
+            return Physics.Raycast(ray, out var hit, RAYCAST_MAX_DISTANCE, _cubitsLayer) ? hit : null;
+        }
+
+        private void StartDestroyingCube(Cube cube)
+        {
+            _destroyingCube = true;
+            
+            _targetCube = cube;
+            _targetCube.StartDestruction();
         }
 
         private void OnDrawGizmos()
         {
-            
             var ray = new Ray(_camera.transform.position, _camera.transform.forward);
 
             if (Physics.Raycast(ray, out var hit, RAYCAST_MAX_DISTANCE, _cubitsLayer))
             {
-                Gizmos.color=Color.red;
+                Gizmos.color = Color.red;
                 Gizmos.DrawSphere(hit.point, .2f);
 
                 var normalRayLength = 2f;
-                
-                Gizmos.color=Color.yellow;
+
+                Gizmos.color = Color.yellow;
                 Gizmos.DrawLine(hit.point, hit.point + hit.normal * normalRayLength);
             }
         }

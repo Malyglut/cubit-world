@@ -57,6 +57,19 @@ namespace Malyglut.CubitWorld
             
             cube.name = $"Cube [{cubePosition.x}, {cubePosition.y}, {cubePosition.z}]";
             _cubes.Add(cubePosition, cube);
+
+            cube.OnDestroy += HandleCubeDestroyed;
+        }
+
+        private void HandleCubeDestroyed(Cube cube)
+        {
+            if (!_cubes.ContainsKey(cube.transform.position))
+            {
+                return;
+            }
+
+            _cubes.Remove(cube.transform.position);
+            cube.OnDestroy -= HandleCubeDestroyed;
         }
 
         [Button]

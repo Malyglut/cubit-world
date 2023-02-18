@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -7,6 +8,9 @@ namespace Malyglut.CubitWorld
 {
     public class Cube : MonoBehaviour
     {
+        public event Action<Cube> OnDestroy; 
+
+
         [SerializeField]
         private MeshFilter _meshFilter;
 
@@ -14,7 +18,57 @@ namespace Malyglut.CubitWorld
         private MeshRenderer _meshRenderer;
 
         [SerializeField]
+        private float _destructionTime = 5f;
+
+        [SerializeField]
         private List<Cubit> _cubits = new();
+
+        private float _destructionStartTime;
+        private bool _isBeingDestroyed;
+
+        private void Awake()
+        {
+            var cubits = GetComponentsInChildren<Cubit>();
+
+            foreach (var cubit in cubits)
+            {
+                Add(cubit);
+            }
+        }
+
+        public void Add(Cubit cubit)
+        {
+            _cubits.Add(cubit);
+        }
+
+        public void StartDestruction()
+        {
+            _destructionStartTime = Time.time;
+            _isBeingDestroyed = true;
+        }
+
+        private void Update()
+        {
+            if (!_isBeingDestroyed)
+            {
+                return;
+            }
+
+            if (Time.time >= _destructionStartTime + _destructionTime)
+            {
+                DestroyCube();
+            }
+        }
+
+        private void DestroyCube()
+        {
+            Debug.Log("Cube destroyed");
+            Debug.Log($"Player awarded {_cubits.Count} cubits");
+
+            OnDestroy.Invoke(this);
+            
+            Destroy(gameObject);
+        }
 
         [Button]
         public void CombineMeshes()
@@ -94,11 +148,6 @@ namespace Malyglut.CubitWorld
         {
             Gizmos.color = Color.blue;
             Gizmos.DrawWireCube(transform.position, transform.localScale);
-        }
-
-        public void Add(Cubit cubit)
-        {
-            _cubits.Add(cubit);
         }
     }
 }
