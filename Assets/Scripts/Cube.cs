@@ -91,5 +91,10 @@ namespace Malyglut.CubitWorld
             Gizmos.color = Color.blue;
             Gizmos.DrawWireCube(transform.position, transform.localScale);
         }
+
+        public void Add(Cubit cubit)
+        {
+            _cubits.Add(cubit);
+        }
     }
 }

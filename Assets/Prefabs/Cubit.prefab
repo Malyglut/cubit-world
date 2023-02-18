@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3222541713476179188}
   - component: {fileID: 6940934151291035692}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Collision
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -56,7 +56,7 @@ GameObject:
   - component: {fileID: 7440261447210680455}
   - component: {fileID: 1513741785920465593}
   - component: {fileID: 4082554829613422742}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -138,7 +138,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2675790743980752125}
   - component: {fileID: 3027699588758572586}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cubit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -154,7 +154,7 @@ Transform:
   m_GameObject: {fileID: 6834156551094649148}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.33333334, y: 0.33333334, z: 0.33333334}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7440261447210680455}

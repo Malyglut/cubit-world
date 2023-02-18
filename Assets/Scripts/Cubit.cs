@@ -21,29 +21,35 @@ namespace Malyglut.CubitWorld
         private GameObject _collision;
 
         public CubitData Data { get; private set; }
+        public Cube Cube { get; private set; }
 
         public Mesh Mesh => _meshFilter.mesh;
         public Material Material => _renderer.sharedMaterial;
 
         private void Awake()
         {
-            if (_initializationData != null)
+            var cube = GetComponentInParent<Cube>();
+            
+            if (_initializationData != null && cube !=null)
             {
-                Initialize(_initializationData);
+                Initialize(_initializationData, cube);
             }
         }
 
         [Button]
-        public void Initialize(CubitData data)
+        public void Initialize(CubitData data, Cube cube)
         {
-            if (data == null)
+            if (data == null || cube == null)
             {
                 Debug.LogError("Null data passed to Cubit.");
                 return;
             }
             
             Data = data;
+            Cube = cube;
 
+            transform.SetParent(Cube.transform);
+            
             name = $"{Data.Name} [{transform.localPosition}]";
             _renderer.material.color = Data.Color;
         }
