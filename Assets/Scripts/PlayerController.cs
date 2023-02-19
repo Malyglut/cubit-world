@@ -6,10 +6,11 @@ namespace Malyglut.CubitWorld
 {
     public class PlayerController : MonoBehaviour
     {
-        private const float RAYCAST_MAX_DISTANCE = 500000f;
-
         [SerializeField]
         private LayerMask _cubitsLayer;
+        
+        [SerializeField]
+        private LayerMask _planeLayer;
 
         [SerializeField]
         private Camera _camera;
@@ -28,6 +29,15 @@ namespace Malyglut.CubitWorld
         
         [SerializeField]
         private GameEvent _hotbarSelection;
+
+        [SerializeField]
+        private GameSettings _gameSettings;
+
+        [SerializeField]
+        private CubeGrid _grid;
+
+        [SerializeField, Range(1f, 25f)]
+        private float _interactionRange = 5f;
         
         private bool _destroyingCube;
         private Cube _targetCube;
@@ -63,6 +73,22 @@ namespace Malyglut.CubitWorld
                     var targetCubit = hit.transform.GetComponentInParent<Cubit>();
                     _placement.PlaceCubit(targetCubit, hit.normal, _selectedCubitData);
                     _playerInventory.SubtractMarbles(_selectedCubitData, 1);
+                }
+                else
+                {
+                    raycastHit = RaycastPlane();
+
+                    if (raycastHit.HasValue)
+                    {
+                        var hit = raycastHit.Value;
+
+                        var cubePosition = _grid.WorldPositionToCubePosition(hit.point);
+                        var cubitPosition = _grid.WorldPositionToCubitPosition(hit.point);
+                        Debug.Log($"Plane position: {hit.point}, Cube position: {cubePosition}, Cubit position: {cubitPosition}");
+
+                        _placement.PlaceCubit(hit.point, _selectedCubitData);
+                        _playerInventory.SubtractMarbles(_selectedCubitData, 1);
+                    }
                 }
             }
 
@@ -128,7 +154,13 @@ namespace Malyglut.CubitWorld
         private RaycastHit? RaycastCubits()
         {
             var ray = new Ray(_camera.transform.position, _camera.transform.forward);
-            return Physics.Raycast(ray, out var hit, RAYCAST_MAX_DISTANCE, _cubitsLayer) ? hit : null;
+            return Physics.Raycast(ray, out var hit, _interactionRange, _cubitsLayer) ? hit : null;
+        }
+
+        private RaycastHit? RaycastPlane()
+        {
+            var ray = new Ray(_camera.transform.position, _camera.transform.forward);
+            return Physics.Raycast(ray, out var hit, _interactionRange, _planeLayer) ? hit : null;
         }
 
         private void StartDestroyingCube(Cube cube)
@@ -143,10 +175,13 @@ namespace Malyglut.CubitWorld
 
         private void OnDrawGizmos()
         {
-            var ray = new Ray(_camera.transform.position, _camera.transform.forward);
+            Gizmos.DrawWireSphere(transform.position, _interactionRange);
+            
+            var raycastHit = RaycastCubits();
 
-            if (Physics.Raycast(ray, out var hit, RAYCAST_MAX_DISTANCE, _cubitsLayer))
+            if (raycastHit.HasValue)
             {
+                var hit = raycastHit.Value;
                 Gizmos.color = Color.red;
                 Gizmos.DrawSphere(hit.point, .2f);
 
@@ -154,6 +189,26 @@ namespace Malyglut.CubitWorld
 
                 Gizmos.color = Color.yellow;
                 Gizmos.DrawLine(hit.point, hit.point + hit.normal * normalRayLength);
+            }
+            else
+            {
+                raycastHit = RaycastPlane();
+
+                if (raycastHit.HasValue)
+                {
+                    var hit = raycastHit.Value;
+                    Gizmos.color = Color.red;
+                    Gizmos.DrawSphere(hit.point, .2f);
+
+                    var cubePosition = _grid.WorldPositionToCubePosition(hit.point);
+                    var cubitPosition = _grid.WorldPositionToCubitPosition(hit.point);
+
+                    Gizmos.color = Color.yellow;
+                    Gizmos.DrawSphere(cubePosition, .2f);
+                    Gizmos.DrawWireCube(cubePosition, Vector3.one *_gameSettings.CubeSize);
+                    Gizmos.DrawWireCube(cubitPosition, Vector3.one *_gameSettings.CubitSize);
+                    
+                }
             }
         }
     }

@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: Game Settings
   m_EditorClassIdentifier: 
   _cubitSize: 1
-  _cubeSize: 3
+  _cubitsPerCubeAxis: 3

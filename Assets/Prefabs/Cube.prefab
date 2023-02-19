@@ -98,5 +98,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _meshFilter: {fileID: 7746220762585209155}
   _meshRenderer: {fileID: 781605094401213658}
-  _destructionTime: 2
+  _destructionTime: 0.2
   _cubits: []

@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Malyglut.CubitWorld
 {
@@ -11,10 +10,12 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private float _cubitSize = 1f;
         
-        [SerializeField]
-        private float _cubeSize = 3f;
+        [SerializeField, Range(1,9)]
+        private int _cubitsPerCubeAxis = 3;
 
         public float CubitSize => _cubitSize;
+
+        public float CubeSize => _cubitSize * _cubitsPerCubeAxis;
 
         public float CubeMaxExtents
         {
@@ -22,16 +23,14 @@ namespace Malyglut.CubitWorld
             {
                 if (_cubeMaxExtents <= 0)
                 {
-                    _cubeMaxExtents = _cubitSize / _cubeSize;
+                    _cubeMaxExtents = _cubitSize / CubeSize;
                     _cubeMaxExtents += CUBIT_PLACEMENT_TOLERANCE;
                 }
 
                 return _cubeMaxExtents;
             }
         }
-
-        public float CubeSize => _cubeSize;
-
+        
         private float _cubeMaxExtents = float.MinValue;
     }
 }
