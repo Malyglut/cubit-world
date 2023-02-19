@@ -28,7 +28,7 @@ namespace Malyglut.CubitWorld
         
         public IReadOnlyDictionary<CubitData, int> CubitsReward => _cubitsReward;
 
-        private void Awake()
+        private void Start()
         {
             var cubits = GetComponentsInChildren<Cubit>();
 

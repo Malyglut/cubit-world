@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Malyglut.CubitWorld
 {
@@ -15,19 +17,32 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private float _moveSpeed = 2f;
 
-        [SerializeField]
-        private CubitData _selectedCubit;
+        [FormerlySerializedAs("_selectedCubit"),SerializeField]
+        private CubitData _selectedCubitData;
 
         [SerializeField]
         private CubitPlacementSystem _placement;
 
+        [SerializeField]
         private PlayerInventory _playerInventory;
+        
+        [SerializeField]
+        private GameEvent _hotbarSelection;
+        
         private bool _destroyingCube;
         private Cube _targetCube;
 
         private void Awake()
         {
-            _playerInventory = new PlayerInventory();
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+            
+            _hotbarSelection.Subscribe(HandleMarbleSelected);
+        }
+
+        private void HandleMarbleSelected(object cubitDataObject)
+        {
+            _selectedCubitData = (CubitData)cubitDataObject;
         }
 
         private void Update()
@@ -38,7 +53,7 @@ namespace Malyglut.CubitWorld
 
         private void ProcessInput()
         {
-            if (Input.GetMouseButtonDown(1))
+            if (_selectedCubitData != null && Input.GetMouseButtonDown(1))
             {
                 var raycastHit = RaycastCubits();
 
@@ -46,7 +61,8 @@ namespace Malyglut.CubitWorld
                 {
                     var hit = raycastHit.Value;
                     var targetCubit = hit.transform.GetComponentInParent<Cubit>();
-                    _placement.PlaceCubit(targetCubit, hit.normal, _selectedCubit);
+                    _placement.PlaceCubit(targetCubit, hit.normal, _selectedCubitData);
+                    _playerInventory.SubtractMarbles(_selectedCubitData, 1);
                 }
             }
 
