@@ -49,9 +49,7 @@ namespace Malyglut.CubitWorld
 
                 if (Physics.Raycast(ray, out var hit, 10000f, _shapePreviewLayer))
                 {
-                    // Debug.Log(_cubitsParent.InverseTransformPoint(hit.point).ToString("F8"));
-
-                    var cubitPosition = CubitPosition(hit.point);
+                    var cubitPosition = CubitPosition(hit.point + hit.normal * (_cubitSize * .5f));
                     var cubit = Instantiate(_cubitPrefab, cubitPosition, _cubitsParent.rotation, _cubitsParent);
                     cubit.transform.localScale = Vector3.one * _cubitSize;
                 }
@@ -86,42 +84,22 @@ namespace Malyglut.CubitWorld
             {
                 Gizmos.color = Color.red;
                 Gizmos.DrawSphere(hit.point, .05f);
-                Vector3 point;
-
-                var targetCubit = hit.transform.GetComponent<Cubit>();
-                if (targetCubit != null)
-                {
-                    var localNormal = _cubitsParent.InverseTransformDirection(hit.normal);
-                    point = CubitPosition(targetCubit.transform.position + hit.normal * _cubitSize);
-                }
-                else
-                {
-                    point = CubitPosition(hit.point);
-                }
+                Vector3 point = CubitPosition(hit.point + hit.normal * (_cubitSize * .5f));
 
                 Gizmos.color = Color.yellow;
                 Gizmos.DrawSphere(point, .05f);
                 Gizmos.DrawWireCube(point, Vector3.one * _cubitSize);
+                Gizmos.DrawLine(hit.point, hit.point + hit.normal * _cubitSize * .5f);
             }
         }
 
         private Vector3 CubitPosition(Vector3 position)
         {
             var localPosition = _cubitsParent.InverseTransformPoint(position);
-            //nasty hack to avoid Cubits being placed inside one another when raycasting against a Cubit due to floating point errors
-            // localPosition -= Vector3.one * 0.0000025f;
-
-            // var x = GridIndex(localPosition.x, _cubitSize);
-            // var y = GridIndex(localPosition.y, _cubitSize);
-            // var z = GridIndex(localPosition.z, _cubitSize);
 
             var x = Mathf.Round(localPosition.x / _cubitSize) * _cubitSize;
             var y = Mathf.Round(localPosition.y / _cubitSize) * _cubitSize;
             var z = Mathf.Round(localPosition.z / _cubitSize) * _cubitSize;
-
-            x = Mathf.Clamp(x, -_cubitSize, _cubitSize);
-            y = Mathf.Clamp(y, -_cubitSize, _cubitSize);
-            z = Mathf.Clamp(z, -_cubitSize, _cubitSize);
 
             var point = new Vector3(x, y, z);
 
