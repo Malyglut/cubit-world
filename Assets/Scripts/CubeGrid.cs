@@ -95,17 +95,21 @@ namespace Malyglut.CubitWorld
 
         public Vector3 WorldPositionToCubitPosition(Vector3 position)
         {
-            position.y -= _gameSettings.CubitSize * .5f;
+            position.y -= _gameSettings.CubitSize;
             return GridPosition(position, _gameSettings.CubitSize);
         }
 
         private Vector3 GridPosition(Vector3 position, float granularity)
         {
-            var x = GridIndex(position.x, granularity);
-            var y = GridIndex(position.y, granularity);
-            var z = GridIndex(position.z, granularity);
+            // var x = GridIndex(position.x, granularity);
+            // var y = GridIndex(position.y, granularity);
+            // var z = GridIndex(position.z, granularity);
 
-            var gridPosition = new Vector3(x, y, z) * granularity;
+            var x = Mathf.Round(position.x / granularity) * granularity;
+            var y = Mathf.Round(position.y / granularity) * granularity;
+            var z = Mathf.Round(position.z / granularity) * granularity;
+
+            var gridPosition = new Vector3(x, y, z);
             gridPosition.y += _gameSettings.CubeSize * .5f;
             
             return gridPosition;

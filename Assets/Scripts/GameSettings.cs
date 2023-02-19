@@ -17,6 +17,8 @@ namespace Malyglut.CubitWorld
 
         public float CubeSize => _cubitSize * _cubitsPerCubeAxis;
 
+        public int CubitsPerCubeAxis => _cubitsPerCubeAxis;
+
         public float CubeMaxExtents
         {
             get
