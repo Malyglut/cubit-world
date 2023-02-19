@@ -1,12 +1,16 @@
 ﻿using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Malyglut.CubitWorld
 {
     public class Cubit : MonoBehaviour
     {
+        [FormerlySerializedAs("_renderer"),SerializeField]
+        private Renderer _cubitRenderer;
+        
         [SerializeField]
-        private Renderer _renderer;
+        private Renderer _marbleRenderer;
 
         [SerializeField]
         private MeshFilter _meshFilter;
@@ -20,15 +24,22 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private GameObject _collision;
 
+        [SerializeField]
+        private Animator _animator;
+        
+        [SerializeField]
+        private AnimationClip _placement;
+
         public CubitData Data { get; private set; }
         public Cube Cube { get; private set; }
 
         public Mesh Mesh => _meshFilter.mesh;
-        public Material Material => _renderer.sharedMaterial;
+        public Material Material => _cubitRenderer.sharedMaterial;
 
         private void Awake()
         {
             var cube = GetComponentInParent<Cube>();
+            _animator.enabled = false;
             
             if (_initializationData != null && cube !=null)
             {
@@ -51,12 +62,25 @@ namespace Malyglut.CubitWorld
             transform.SetParent(Cube.transform);
             
             name = $"{Data.Name} [{transform.localPosition}]";
-            _renderer.material.color = Data.Color;
+            _cubitRenderer.material.color = Data.Color;
+            _marbleRenderer.material.color = Data.Color;
         }
 
         public void DisableVisuals()
         {
             _visual.gameObject.SetActive(false);
+        }
+
+        [Button]
+        public void PlayPlacementAnimation()
+        {
+            _animator.enabled = true;
+            _animator.Play(_placement.name);
+        }
+
+        public void FinishPlayingAnimation()
+        {
+            _animator.enabled = false;
         }
     }
 }

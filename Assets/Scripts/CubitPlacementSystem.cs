@@ -58,6 +58,7 @@ namespace Malyglut.CubitWorld
             newCubit.transform.localScale = Vector3.one * _gameSettings.CubitSize;
 
             newCubit.Initialize(cubitData, parentCube);
+            newCubit.PlayPlacementAnimation();
             parentCube.Add(newCubit);
         }
     }
