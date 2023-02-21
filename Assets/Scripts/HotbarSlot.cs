@@ -1,11 +1,15 @@
-﻿using TMPro;
+﻿using System;
+using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Malyglut.CubitWorld
 {
-    public class HotbarSlot : MonoBehaviour
+    public class HotbarSlot : MonoBehaviour, IPointerDownHandler
     {
+        public event Action<HotbarSlot> OnClick;
+        
         [SerializeField]
         private TextMeshProUGUI _count;
 
@@ -39,6 +43,11 @@ namespace Malyglut.CubitWorld
             {
                 _contentsObject.SetActive(false);
             }
+        }
+
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            OnClick.Invoke(this);
         }
     }
 }

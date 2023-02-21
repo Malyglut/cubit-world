@@ -10,6 +10,9 @@ namespace Malyglut.CubitWorld
 
         [SerializeField]
         private LayerMask _shapePreviewLayer;
+        
+        [SerializeField]
+        private LayerMask _cubitsLayer;
 
         [SerializeField]
         private Cubit _cubitPrefab;
@@ -26,9 +29,17 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private float _rotationSpeed = 25f;
 
+        [SerializeField]
+        private PlayerInventory _playerInventory;
+
         private float _cubitSize;
-        private Vector3 _dragStartMousePosition = Vector3.negativeInfinity;
         private Quaternion _initialRotation;
+        private CubitData _selectedCubit;
+
+        private void OnEnable()
+        {
+            transform.rotation = _initialRotation;
+        }
 
         private void Awake()
         {
@@ -42,27 +53,58 @@ namespace Malyglut.CubitWorld
             {
                 return;
             }
+            
+            
+            HandleRotation();
 
+            if (Input.GetMouseButtonDown(0))
+            {
+                var ray = _camera.ScreenPointToRay(Input.mousePosition);
+
+                if (Physics.Raycast(ray, out var hit, 10000f, _cubitsLayer))
+                {
+                    var cubit= hit.transform.GetComponentInParent<Cubit>();
+
+                    if (cubit == null)
+                    {
+                        return;
+                    }
+                    
+                    Destroy(cubit.gameObject);
+
+                    _playerInventory.AddMarbles(cubit.Data, 1);
+                }
+            }
+            
+            if (_selectedCubit == null)
+            {
+                return;
+            }
+            
             if (Input.GetMouseButtonDown(1))
             {
                 var ray = _camera.ScreenPointToRay(Input.mousePosition);
 
-                if (Physics.Raycast(ray, out var hit, 10000f, _shapePreviewLayer))
+                if (Physics.Raycast(ray, out var hit, 10000f, _shapePreviewLayer | _cubitsLayer))
                 {
                     var cubitPosition = CubitPosition(hit.point + hit.normal * (_cubitSize * .5f));
                     var cubit = Instantiate(_cubitPrefab, cubitPosition, _cubitsParent.rotation, _cubitsParent);
                     cubit.transform.localScale = Vector3.one * _cubitSize;
+
+                    cubit.Initialize(_selectedCubit, null);
+                    cubit.PlayPlacementAnimation();
+
+                    _playerInventory.SubtractMarbles(_selectedCubit, 1);
                 }
             }
+        }
 
-            if (Input.GetMouseButtonDown(2))
-            {
-                _dragStartMousePosition = Input.mousePosition;
-            }
-
+        private void HandleRotation()
+        {
             if (Input.GetMouseButton(2))
             {
-                var mouseX = Input.GetAxisRaw("Mouse X");
+                //inverted
+                var mouseX = Input.GetAxisRaw("Mouse X") *-1f;
 
                 mouseX = mouseX != 0f ? Mathf.Sign(mouseX) : 0f;
 
@@ -80,7 +122,7 @@ namespace Malyglut.CubitWorld
         {
             var ray = _camera.ScreenPointToRay(Input.mousePosition);
 
-            if (Physics.Raycast(ray, out var hit, 10000f, _shapePreviewLayer))
+            if (Physics.Raycast(ray, out var hit, 10000f, _shapePreviewLayer | _cubitsLayer))
             {
                 Gizmos.color = Color.red;
                 Gizmos.DrawSphere(hit.point, .05f);
@@ -104,6 +146,11 @@ namespace Malyglut.CubitWorld
             var point = new Vector3(x, y, z);
 
             return _cubitsParent.TransformPoint(point);
+        }
+
+        public void ChangeCubit(CubitData cubitData)
+        {
+            _selectedCubit = cubitData;
         }
     }
 }
