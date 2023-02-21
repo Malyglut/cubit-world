@@ -10,7 +10,7 @@ namespace Malyglut.CubitWorld
 
         [SerializeField]
         private LayerMask _shapePreviewLayer;
-        
+
         [SerializeField]
         private LayerMask _cubitsLayer;
 
@@ -32,9 +32,14 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private PlayerInventory _playerInventory;
 
+        [SerializeField]
+        private CubitPreview _placementPreview;
+
         private float _cubitSize;
         private Quaternion _initialRotation;
         private CubitData _selectedCubit;
+        private bool _rotationInProgress;
+        private bool HasValidPlacementPosition => _placementPreview.gameObject.activeSelf;
 
         private void OnEnable()
         {
@@ -45,6 +50,7 @@ namespace Malyglut.CubitWorld
         {
             _cubitSize = 1f / _gameSettings.CubitsPerCubeAxis;
             _initialRotation = _shapeContainer.rotation;
+            _placementPreview.gameObject.SetActive(false);
         }
 
         private void Update()
@@ -53,9 +59,18 @@ namespace Malyglut.CubitWorld
             {
                 return;
             }
-            
-            
+
+            UpdatePreview();
             HandleRotation();
+            ProcessInput();
+        }
+
+        private void ProcessInput()
+        {
+            if (_rotationInProgress)
+            {
+                return;
+            }
 
             if (Input.GetMouseButtonDown(0))
             {
@@ -63,48 +78,78 @@ namespace Malyglut.CubitWorld
 
                 if (Physics.Raycast(ray, out var hit, 10000f, _cubitsLayer))
                 {
-                    var cubit= hit.transform.GetComponentInParent<Cubit>();
+                    var cubit = hit.transform.GetComponentInParent<Cubit>();
 
                     if (cubit == null)
                     {
                         return;
                     }
-                    
-                    Destroy(cubit.gameObject);
 
-                    _playerInventory.AddMarbles(cubit.Data, 1);
+                    DestroyCubit(cubit);
                 }
             }
-            
+
             if (_selectedCubit == null)
             {
                 return;
             }
-            
-            if (Input.GetMouseButtonDown(1))
+
+            if (Input.GetMouseButtonDown(1) && HasValidPlacementPosition)
+            {
+                PlaceCubit();
+            }
+        }
+
+        private void PlaceCubit()
+        {
+            var cubit = Instantiate(_cubitPrefab, _placementPreview.transform.position, _cubitsParent.rotation,
+                _cubitsParent);
+            cubit.transform.localScale = Vector3.one * _cubitSize;
+
+            cubit.Initialize(_selectedCubit, null);
+            cubit.PlayPlacementAnimation();
+
+            _playerInventory.SubtractMarbles(_selectedCubit, 1);
+        }
+
+        private void DestroyCubit(Cubit cubit)
+        {
+            Destroy(cubit.gameObject);
+            _playerInventory.AddMarbles(cubit.Data, 1);
+        }
+
+        private void UpdatePreview()
+        {
+            if (_selectedCubit != null && !_rotationInProgress)
             {
                 var ray = _camera.ScreenPointToRay(Input.mousePosition);
 
                 if (Physics.Raycast(ray, out var hit, 10000f, _shapePreviewLayer | _cubitsLayer))
                 {
+                    _placementPreview.gameObject.SetActive(true);
+
                     var cubitPosition = CubitPosition(hit.point + hit.normal * (_cubitSize * .5f));
-                    var cubit = Instantiate(_cubitPrefab, cubitPosition, _cubitsParent.rotation, _cubitsParent);
-                    cubit.transform.localScale = Vector3.one * _cubitSize;
-
-                    cubit.Initialize(_selectedCubit, null);
-                    cubit.PlayPlacementAnimation();
-
-                    _playerInventory.SubtractMarbles(_selectedCubit, 1);
+                    _placementPreview.transform.position = cubitPosition;
+                    _placementPreview.transform.rotation = _cubitsParent.rotation;
+                }
+                else
+                {
+                    _placementPreview.gameObject.SetActive(false);
                 }
             }
         }
 
         private void HandleRotation()
         {
+            if (Input.GetMouseButtonDown(2))
+            {
+                _rotationInProgress = true;
+            }
+
             if (Input.GetMouseButton(2))
             {
                 //inverted
-                var mouseX = Input.GetAxisRaw("Mouse X") *-1f;
+                var mouseX = Input.GetAxisRaw("Mouse X") * -1f;
 
                 mouseX = mouseX != 0f ? Mathf.Sign(mouseX) : 0f;
 
@@ -115,6 +160,11 @@ namespace Malyglut.CubitWorld
                     directionVector *= Time.deltaTime * _rotationSpeed;
                     _shapeContainer.Rotate(directionVector);
                 }
+            }
+
+            if (Input.GetMouseButtonUp(2))
+            {
+                _rotationInProgress = false;
             }
         }
 
@@ -151,6 +201,12 @@ namespace Malyglut.CubitWorld
         public void ChangeCubit(CubitData cubitData)
         {
             _selectedCubit = cubitData;
+            _placementPreview.gameObject.SetActive(_selectedCubit != null);
+
+            if (_selectedCubit != null)
+            {
+                _placementPreview.UpdateColor(_selectedCubit.Color);
+            }
         }
     }
 }

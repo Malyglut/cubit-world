@@ -79,8 +79,6 @@ namespace Malyglut.CubitWorld
                     var hit = raycastHit.Value;
                     var targetCubit = hit.transform.GetComponentInParent<Cubit>();
                     _placement.UpdatePreview(targetCubit, hit.normal);
-                    // _placement.PlaceCubit(targetCubit, hit.normal, _selectedCubitData);
-                    // _playerInventory.SubtractMarbles(_selectedCubitData, 1);
                 }
                 else
                 {
@@ -91,9 +89,6 @@ namespace Malyglut.CubitWorld
                         var hit = raycastHit.Value;
 
                         _placement.UpdatePreview(hit.point);
-                        
-                        // _placement.PlaceCubit(hit.point, _selectedCubitData);
-                        // _playerInventory.SubtractMarbles(_selectedCubitData, 1);
                     }
                     else
                     {
@@ -109,31 +104,8 @@ namespace Malyglut.CubitWorld
             {
                 if (_placement.HasValidPlacementPosition)
                 {
-                    _placement.PlaceCubit(_selectedCubitData);
-                    _playerInventory.SubtractMarbles(_selectedCubitData, 1);
+                    PlaceCubit();
                 }
-                
-                // var raycastHit = RaycastCubits();
-                //
-                // if (raycastHit.HasValue)
-                // {
-                //     var hit = raycastHit.Value;
-                //     var targetCubit = hit.transform.GetComponentInParent<Cubit>();
-                //     _placement.PlaceCubit(targetCubit, hit.normal, _selectedCubitData);
-                //     _playerInventory.SubtractMarbles(_selectedCubitData, 1);
-                // }
-                // else
-                // {
-                //     raycastHit = RaycastPlane();
-                //
-                //     if (raycastHit.HasValue)
-                //     {
-                //         var hit = raycastHit.Value;
-                //
-                //         _placement.PlaceCubit(hit.point, _selectedCubitData);
-                //         _playerInventory.SubtractMarbles(_selectedCubitData, 1);
-                //     }
-                // }
             }
 
             if (Input.GetMouseButtonDown(0))
@@ -147,6 +119,12 @@ namespace Malyglut.CubitWorld
                     StartDestroyingCube(targetCubit.Cube);
                 }
             }
+        }
+
+        private void PlaceCubit()
+        {
+            _placement.PlaceCubit(_selectedCubitData);
+            _playerInventory.SubtractMarbles(_selectedCubitData, 1);
         }
 
         private void HandleCubeDestructionProgress()
