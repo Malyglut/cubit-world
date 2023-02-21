@@ -24,7 +24,7 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private PlacementSystem _placement;
 
-        [FormerlySerializedAs("_playerInventory"),SerializeField]
+        [FormerlySerializedAs("_playerInventory"), SerializeField]
         private PlayerInventory _inventory;
 
         [SerializeField]
@@ -38,10 +38,10 @@ namespace Malyglut.CubitWorld
 
         [SerializeField, Range(1f, 25f)]
         private float _interactionRange = 5f;
-        
+
         [SerializeField]
         private GameEvent _inventoryOpened;
-        
+
         [SerializeField]
         private GameEvent _inventoryClosed;
 
@@ -62,13 +62,13 @@ namespace Malyglut.CubitWorld
         private void Suspend()
         {
             _isSuspended = true;
-            
+
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
 
             _placement.HidePreview();
-            
-            if(_targetCube!=null)
+
+            if (_targetCube != null)
             {
                 StopDestroyingCube();
             }
@@ -77,7 +77,7 @@ namespace Malyglut.CubitWorld
         private void Unsuspend()
         {
             _isSuspended = false;
-            
+
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
         }
@@ -94,7 +94,7 @@ namespace Malyglut.CubitWorld
             {
                 return;
             }
-            
+
             UpdatePreview();
             ProcessInput();
             HandleCubeDestructionProgress();
@@ -110,7 +110,8 @@ namespace Malyglut.CubitWorld
                 {
                     var hit = raycastHit.Value;
                     var targetCubit = hit.transform.GetComponentInParent<Cubit>();
-                    _placement.UpdatePreviewPosition(_selectedPlaceableData, targetCubit, hit.normal);
+                    _placement.UpdatePreviewPosition(_selectedPlaceableData, transform.position, targetCubit,
+                        hit.normal);
                 }
                 else
                 {
@@ -120,7 +121,7 @@ namespace Malyglut.CubitWorld
                     {
                         var hit = raycastHit.Value;
 
-                        _placement.UpdatePreviewPosition(_selectedPlaceableData, hit.point);
+                        _placement.UpdatePreviewPosition(_selectedPlaceableData, transform.position, hit.point);
                     }
                     else
                     {
@@ -141,13 +142,13 @@ namespace Malyglut.CubitWorld
         {
             var forwardSpeed = Input.GetAxis("Vertical") * _moveSpeed;
             var sideSpeed = Input.GetAxis("Horizontal") * _moveSpeed;
-            var upSpeed = (Input.GetKey(KeyCode.Space) ? 1f : 0f)* _moveSpeed;
-            
+            var upSpeed = (Input.GetKey(KeyCode.Space) ? 1f : 0f) * _moveSpeed;
+
             var cameraTransform = _camera.transform;
-            
+
             var moveVector = cameraTransform.forward * forwardSpeed + cameraTransform.right * sideSpeed +
                              Vector3.up * upSpeed;
-            
+
             transform.position += moveVector * Time.deltaTime;
         }
 
@@ -184,7 +185,7 @@ namespace Malyglut.CubitWorld
 
         private void PlaceShape(ShapeData shapeData)
         {
-            if(_inventory.HasShape(shapeData))
+            if (_inventory.HasShape(shapeData))
             {
                 _placement.PlaceShape(shapeData);
                 _inventory.RemoveShape(shapeData);
@@ -193,7 +194,7 @@ namespace Malyglut.CubitWorld
 
         private void PlaceCubit(CubitData cubitData)
         {
-            if(_inventory.MarbleCount(cubitData) > 0)
+            if (_inventory.MarbleCount(cubitData) > 0)
             {
                 _placement.PlaceCubit(cubitData);
                 _inventory.SubtractMarbles(cubitData, 1);

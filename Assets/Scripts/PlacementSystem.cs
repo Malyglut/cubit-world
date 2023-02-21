@@ -14,7 +14,7 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private Cubit _cubitPrefab;
 
-        [FormerlySerializedAs("_placementPreview"), SerializeField]
+        [SerializeField]
         private CubitPreview _cubitPreview;
 
         [SerializeField]
@@ -50,7 +50,7 @@ namespace Malyglut.CubitWorld
             _shapePreview.gameObject.SetActive(false);
         }
 
-        public void UpdatePreviewPosition(IPlaceableData selectedPlaceableData, Cubit targetCubit,
+        public void UpdatePreviewPosition(IPlaceableData selectedPlaceableData, Vector3 playerPosition, Cubit targetCubit,
             Vector3 placementDirection)
         {
             if (selectedPlaceableData is CubitData)
@@ -68,21 +68,21 @@ namespace Malyglut.CubitWorld
                 }
                 else
                 {
-                    UpdateShapePreview(cubePosition);
+                    UpdateShapePreview(playerPosition, cubePosition);
                 }
             }
         }
 
-        public void UpdatePreviewPosition(IPlaceableData selectedPlaceableData, Vector3 position)
+        public void UpdatePreviewPosition(IPlaceableData selectedPlaceableData, Vector3 playerPosition, Vector3 targetPosition)
         {
             if (selectedPlaceableData is CubitData)
             {
-                UpdateCubitPreview(_grid.WorldPositionToCubitPosition(position));
+                UpdateCubitPreview(_grid.WorldPositionToCubitPosition(targetPosition));
             }
 
             if (selectedPlaceableData is ShapeData)
             {
-                var cubePosition = _grid.WorldPositionToCubePosition(position);
+                var cubePosition = _grid.WorldPositionToCubePosition(targetPosition);
 
                 if (_grid.CubeExists(cubePosition))
                 {
@@ -90,7 +90,7 @@ namespace Malyglut.CubitWorld
                 }
                 else
                 {
-                    UpdateShapePreview(cubePosition);
+                    UpdateShapePreview(playerPosition, cubePosition);
                 }
             }
         }
@@ -101,10 +101,22 @@ namespace Malyglut.CubitWorld
             _cubitPreview.transform.position = position;
         }
 
-        private void UpdateShapePreview(Vector3 position)
+        private void UpdateShapePreview(Vector3 playerPosition, Vector3 position)
         {
+            const int rotationStep = 90;
+            
+            var direction = position - playerPosition;
+
+            var targetRotation = Quaternion.LookRotation(direction, Vector3.up);
+            targetRotation.eulerAngles = new Vector3(
+                0f,
+                Mathf.Round(targetRotation.eulerAngles.y / rotationStep) * rotationStep,
+                0f
+            );
+
             _shapePreview.gameObject.SetActive(true);
             _shapePreview.transform.position = position;
+            _shapePreview.transform.rotation = targetRotation;
         }
 
         public void UpdatePreviewVisual(IPlaceableData placeableData)
@@ -140,43 +152,8 @@ namespace Malyglut.CubitWorld
 
                 newCubit.transform.localPosition = localPosition;
             }
+
+            cube.transform.rotation = _shapePreview.transform.rotation;
         }
-        //
-        // private Dictionary<Vector3Int, Cubit> RotateShape(Vector3 referencePosition, Vector3 targetPosition,Dictionary<Vector3Int, Cubit> blueprint)
-        // {
-        //     var rotationModifier = ShapeRotationModifier(referencePosition, targetPosition);
-        //
-        //     if (rotationModifier == Vector3Int.one)
-        //     {
-        //         return blueprint;
-        //     }
-        //
-        //     var rotatedBlueprint = new Dictionary<Vector3Int, Cubit>();
-        //     
-        //     foreach (var (gridIndex, cubit) in blueprint)
-        //     {
-        //         rotatedBlueprint.Add(gridIndex*rotationModifier, cubit);
-        //     }
-        //
-        //     return rotatedBlueprint;
-        // }
-        //
-        // private Vector3Int ShapeRotationModifier(Vector3 referencePosition, Vector3 targetPosition)
-        // {
-        //     var referenceCube = _grid.WorldPositionToCubePosition(referencePosition);
-        //     var targetCube = _grid.WorldPositionToCubePosition(targetPosition);
-        //
-        //     if (referenceCube.z != targetCube.z)
-        //     {
-        //         return referenceCube.z > targetCube.z ? new Vector3Int(-1, 1, -1) : Vector3Int.one;
-        //     }
-        //
-        //     if (referenceCube.x != targetCube.z)
-        //     {
-        //         return referenceCube.x > targetCube.z ? Vector3Int.one : new Vector3Int(-1, 1, 1);
-        //     }
-        //     
-        //     return Vector3Int.one;
-        // }
     }
 }
