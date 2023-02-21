@@ -1,10 +1,12 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Malyglut.CubitWorld
 {
     public class InventoryDragController : MonoBehaviour
     {
+        [SerializeField]
+        private Canvas _canvas;
+        
         [SerializeField]
         private PlayerInventory _inventory;
 
@@ -40,11 +42,9 @@ namespace Malyglut.CubitWorld
                 return;
             }
 
-            var dragPosition = Input.mousePosition;
-
-            transform.InverseTransformPoint(dragPosition);
-            dragPosition.z = 0f;
-            _draggedObject.transform.localPosition = dragPosition;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(_canvas.transform as RectTransform, Input.mousePosition, _canvas.worldCamera, out var canvasPos);
+            
+            _draggedObject.transform.localPosition = canvasPos;
         }
 
         private void UpdateTarget(object slotObject)
