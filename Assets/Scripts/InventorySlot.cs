@@ -1,64 +1,80 @@
 ﻿using System;
-using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace Malyglut.CubitWorld
 {
-    public class InventorySlot : MonoBehaviour, IPointerDownHandler
+    public class InventorySlot : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerClickHandler
     {
-        public event Action<InventorySlot> OnClick;
+        [SerializeField]
+        private InventorySlotVisual _visual;
+
+        [SerializeField]
+        private GameEvent _slotClicked;
         
         [SerializeField]
-        private TextMeshProUGUI _count;
+        private GameEvent _slotDragBegin;
+        
+        [SerializeField]
+        private GameEvent _slotDragEnd;
+        
+        [SerializeField]
+        private GameEvent _slotPointerEnter;
 
         [SerializeField]
-        private Image _icon;
-
-        [SerializeField]
-        private GameObject _contentsObject;
+        private GameObject _selection;
 
         public IPlaceableData Data { get; private set; }
+
+        private void Awake()
+        {
+            Deselect();
+        }
 
         public void Refresh(IPlaceableData data, int count)
         {
             Data = data;
-            _contentsObject.SetActive(Data != null && count>0);
-            
-            if (Data == null)
-            {
-                return;
-            }
-
-            _icon.sprite = data.Icon;
-            
-            if(data is CubitData cubitData)
-            {
-                RefreshForCubit(cubitData);
-            }
-            
-            RefreshCount(count);
+            _visual.Refresh(Data, count);
         }
 
-        private void RefreshForCubit(CubitData cubitData)
+        public void Select()
         {
-            _icon.color = cubitData.Color;
+            _selection.SetActive(true);
         }
 
-        public void RefreshCount(int count)
+        public void Deselect()
         {
-            _count.SetText(count.ToString("00"));
-
-            if (count <= 0)
-            {
-                _contentsObject.SetActive(false);
-            }
+            _selection.SetActive(false);
         }
 
-        public void OnPointerDown(PointerEventData eventData)
+        public void RefreshCount(int amount)
         {
-            OnClick.Invoke(this);
+            _visual.RefreshCount(amount);
+        }
+
+        public void OnBeginDrag(PointerEventData eventData)
+        {
+            _slotDragBegin.Raise(this);
+        }
+
+        public void OnEndDrag(PointerEventData eventData)
+        {
+            _slotDragEnd.Raise(this);
+        }
+
+        public void OnDrag(PointerEventData eventData)
+        {
+            //required for OnBeginDrag and OnEndDrag to work
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            _slotPointerEnter.Raise(this);
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            _slotClicked.Raise(this);
         }
     }
 }

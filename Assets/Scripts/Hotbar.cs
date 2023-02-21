@@ -8,8 +8,6 @@ namespace Malyglut.CubitWorld
 {
     public class Hotbar : MonoBehaviour
     {
-        public event Action<InventorySlot> OnSlotClick;
-        
         [SerializeField]
         private InventorySlot _slotPrefab;
 
@@ -17,26 +15,22 @@ namespace Malyglut.CubitWorld
         private Transform _slotsParent;
 
         [SerializeField]
-        private Transform _selection;
-
-        [SerializeField]
         private int _slotCount = 9;
-        
+
         [SerializeField]
         private GameEvent _hotbarSelection;
 
         private readonly List<InventorySlot> _slots = new();
-        private Dictionary<InventorySlot, IPlaceableData> _slotsData = new();
-        private int _selectedSlotIdx;
+        private int _selectedSlotIdx = -1;
         private bool _inventoryOpen;
 
-        public bool HasEmptySlots => _slotsData.Any(slot => slot.Value == null);
+        public bool HasEmptySlots => _slots.Any(slot => slot.Data == null);
 
         public bool HasMarble(CubitData cubitData)
         {
-            return _slotsData.Any(slotData => slotData.Value is CubitData slotCubit && slotCubit == cubitData);
+            return _slots.Any(slot => slot.Data is CubitData slotCubit && slotCubit == cubitData);
         }
-        
+
         private void Awake()
         {
             for (var i = 0; i < _slotCount; i++)
@@ -44,18 +38,10 @@ namespace Malyglut.CubitWorld
                 var slot = Instantiate(_slotPrefab, _slotsParent);
                 slot.Refresh(null, 0);
 
-                slot.OnClick += HandleSlotClick;
-
                 _slots.Add(slot);
-                _slotsData.Add(slot, null);
             }
 
             StartCoroutine(UpdateSelectionOnStart());
-        }
-
-        private void HandleSlotClick(InventorySlot slot)
-        {
-            OnSlotClick.Invoke(slot);
         }
 
         private IEnumerator UpdateSelectionOnStart()
@@ -66,8 +52,9 @@ namespace Malyglut.CubitWorld
 
         public void RefreshMarbles(CubitData cubitData, int amount)
         {
-            var marbleSlot = _slotsData.FirstOrDefault(slotData => slotData.Value is CubitData slotCubit && slotCubit == cubitData).Key;
-            
+            var marbleSlot = _slots
+                .FirstOrDefault(slot => slot.Data is CubitData slotCubit && slotCubit == cubitData);
+
             if (marbleSlot != null)
             {
                 UpdateMarbleSlot(marbleSlot, amount);
@@ -80,17 +67,16 @@ namespace Malyglut.CubitWorld
 
         public void AddShape(ShapeData shapeData)
         {
-            var firstEmptySlot = _slotsData.First(slot => slot.Value == null).Key;
+            var firstEmptySlot = _slots.First(slot => slot.Data == null);
 
             firstEmptySlot.Refresh(shapeData, 1);
-            _slotsData[firstEmptySlot] = shapeData;
         }
 
         private void UpdateMarbleSlot(InventorySlot slot, int amount)
         {
             if (amount > 0)
             {
-                slot.RefreshCount(amount);                
+                slot.RefreshCount(amount);
             }
             else
             {
@@ -100,7 +86,6 @@ namespace Malyglut.CubitWorld
 
         private void ClearSlot(InventorySlot slot)
         {
-            _slotsData[slot] = null;
             slot.Refresh(null, 0);
             UpdateIfSelected(slot);
         }
@@ -112,10 +97,9 @@ namespace Malyglut.CubitWorld
                 return;
             }
 
-            var firstEmptySlot = _slotsData.First(slot => slot.Value == null).Key;
+            var firstEmptySlot = _slots.First(slot => slot.Data == null);
 
             firstEmptySlot.Refresh(cubitData, amount);
-            _slotsData[firstEmptySlot] = cubitData;
 
             UpdateIfSelected(firstEmptySlot);
         }
@@ -140,11 +124,22 @@ namespace Malyglut.CubitWorld
                 slotIdx = 0;
             }
 
+
+            DeselectCurrentSlot();
+
             var selectedSlot = _slots[slotIdx];
-            _selection.position = selectedSlot.transform.position;
+            selectedSlot.Select();
             _selectedSlotIdx = slotIdx;
-            
-            _hotbarSelection.Raise(_slotsData[selectedSlot]);
+
+            _hotbarSelection.Raise(selectedSlot.Data);
+        }
+
+        private void DeselectCurrentSlot()
+        {
+            if (_selectedSlotIdx >= 0 && _selectedSlotIdx < _slots.Count)
+            {
+                _slots[_selectedSlotIdx].Deselect();
+            }
         }
 
         private void Update()
@@ -179,23 +174,32 @@ namespace Malyglut.CubitWorld
         public void ShowSelection()
         {
             _inventoryOpen = false;
-            _selection.gameObject.SetActive(true);
+            SelectCurrentSlot();
+            SelectSlot(_selectedSlotIdx);
+        }
+
+        private void SelectCurrentSlot()
+        {
+            if (_selectedSlotIdx >= 0 && _selectedSlotIdx < _slots.Count)
+            {
+                _slots[_selectedSlotIdx].Select();
+            }
         }
 
         public void HideSelection()
         {
             _inventoryOpen = true;
-            _selection.gameObject.SetActive(false);
+            DeselectCurrentSlot();
         }
 
         public bool HasShape(ShapeData shapeData)
         {
-            return _slotsData.Any(slotData => slotData.Value is ShapeData shape && shape == shapeData);
+            return _slots.Any(slot => slot.Data is ShapeData shape && shape == shapeData);
         }
 
         public void RemoveShape(ShapeData shapeData)
         {
-            var shapeSlot = _slotsData.First(slotData => slotData.Value is ShapeData shape && shape == shapeData).Key;
+            var shapeSlot = _slots.First(slot => slot.Data is ShapeData shape && shape == shapeData);
             ClearSlot(shapeSlot);
         }
     }

@@ -9,10 +9,10 @@ namespace Malyglut.CubitWorld
 {
     public class InventoryScreen : MonoBehaviour
     {
-        [FormerlySerializedAs("_camera"),SerializeField]
+        [FormerlySerializedAs("_camera"), SerializeField]
         private CinemachineVirtualCamera _virtualCamera;
 
-        [FormerlySerializedAs("_shapePreview"),SerializeField]
+        [FormerlySerializedAs("_shapePreview"), SerializeField]
         private ShapeBuilder _shapeBuilder;
 
         [SerializeField]
@@ -34,12 +34,9 @@ namespace Malyglut.CubitWorld
         private Hotbar _hotbar;
 
         [SerializeField]
-        private GameObject _selection;
-        
-        [SerializeField]
         private GameEvent _marbleInventoryUpdate;
-        
-        [FormerlySerializedAs("_shapeInventoryUpdate"),SerializeField]
+
+        [FormerlySerializedAs("_shapeInventoryUpdate"), SerializeField]
         private GameEvent _shapeAddedToInventory;
 
         private bool _isShown;
@@ -47,14 +44,19 @@ namespace Malyglut.CubitWorld
 
         [SerializeField]
         private GameEvent _inventoryOpened;
-        
+
         [SerializeField]
         private GameEvent _inventoryClosed;
-        
+
         [SerializeField]
         private GameEvent _shapeRemovedFromInventory;
 
-        private void Awake()
+        [SerializeField]
+        private GameEvent _slotClicked;
+
+        private InventorySlot _selectedSlot;
+
+        private void Start()
         {
             _gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             _gridLayout.constraintCount = _inventroyDimensions.y;
@@ -65,16 +67,13 @@ namespace Malyglut.CubitWorld
             {
                 var slot = Instantiate(_slotPrefab, _slotsParent);
                 slot.Refresh(null, 0);
-
-                slot.OnClick += HandleSlotClick;
             }
 
-            _hotbar.OnSlotClick += HandleSlotClick;
-            
             _marbleInventoryUpdate.Subscribe(UpdateMarbles);
             _shapeAddedToInventory.Subscribe(AddShape);
             _shapeRemovedFromInventory.Subscribe(RemoveShape);
-            
+            _slotClicked.Subscribe(HandleSlotClick);
+
 
             Close();
         }
@@ -114,9 +113,18 @@ namespace Malyglut.CubitWorld
             }
         }
 
-        private void HandleSlotClick(InventorySlot slot)
+        private void HandleSlotClick(object slotObject)
         {
-            if(slot.Data is CubitData cubitData)
+            var slot = (InventorySlot)slotObject;
+
+            if (_selectedSlot != null)
+            {
+                _selectedSlot.Deselect();
+            }
+            
+            _selectedSlot = slot;
+
+            if (slot.Data is CubitData cubitData)
             {
                 UpdateSelectedCubit(cubitData);
             }
@@ -126,13 +134,12 @@ namespace Malyglut.CubitWorld
                 return;
             }
 
-            _selection.transform.position = slot.transform.position;
+            _selectedSlot.Select();
         }
 
         private void UpdateSelectedCubit(CubitData cubitData)
         {
             _selectedCubit = cubitData;
-            _selection.SetActive(cubitData != null);
             _shapeBuilder.ChangeCubit(cubitData);
         }
 
@@ -145,7 +152,6 @@ namespace Malyglut.CubitWorld
 
             _hotbar.HideSelection();
             _shapeBuilder.ChangeCubit(null);
-            _selection.SetActive(false);
 
             _inventoryOpened.Raise();
         }
@@ -156,10 +162,14 @@ namespace Malyglut.CubitWorld
             _virtualCamera.Priority = -1;
             _shapeBuilder.gameObject.SetActive(false);
             _interface.SetActive(false);
-            
-            
 
             _hotbar.ShowSelection();
+
+            if (_selectedSlot != null)
+            {
+                _selectedSlot.Deselect();
+                _selectedSlot = null;
+            }
             
             _inventoryClosed.Raise();
         }
