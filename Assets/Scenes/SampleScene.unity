@@ -1355,8 +1355,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _slotPrefab: {fileID: -8559023425096588116, guid: 2541d7689fbefb04cb576817d9d87651, type: 3}
   _slotsParent: {fileID: 2002856819}
-  _slotCount: 9
   _hotbarSelection: {fileID: 11400000, guid: 9ddbef618bbee8c499b1ac060134322c, type: 2}
+  _gameSettings: {fileID: 11400000, guid: 9c8787dcb42ba4b4ca70d9199fa1d02f, type: 2}
 --- !u!222 &583688768
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1584,7 +1584,6 @@ MonoBehaviour:
   _shapeBuilder: {fileID: 1764973208}
   _interface: {fileID: 1744248288}
   _slotPrefab: {fileID: -8559023425096588116, guid: 2541d7689fbefb04cb576817d9d87651, type: 3}
-  _inventroyDimensions: {x: 4, y: 4}
   _gridLayout: {fileID: 1078977614}
   _slotsParent: {fileID: 1078977613}
   _hotbar: {fileID: 583688767}
@@ -1594,6 +1593,7 @@ MonoBehaviour:
   _inventoryClosed: {fileID: 11400000, guid: 3a7ac736453ec6541babb4218de7eb0b, type: 2}
   _shapeRemovedFromInventory: {fileID: 11400000, guid: 1164a67a3b989a4499aaeb7cb17b9fc4, type: 2}
   _slotClicked: {fileID: 11400000, guid: 473753f249b25764b839a09824335f48, type: 2}
+  _gameSettings: {fileID: 11400000, guid: 9c8787dcb42ba4b4ca70d9199fa1d02f, type: 2}
 --- !u!114 &634076263
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2238,6 +2238,7 @@ MonoBehaviour:
   _marbleInventoryUpdate: {fileID: 11400000, guid: fed0786d0eb88dd4783b2dcf97a4cec6, type: 2}
   _shapeAddedToInventory: {fileID: 11400000, guid: c32a0f7b9c6287849b3edf95f1061bf3, type: 2}
   _shapeRemovedFromInventory: {fileID: 11400000, guid: 1164a67a3b989a4499aaeb7cb17b9fc4, type: 2}
+  _gameSettings: {fileID: 11400000, guid: 9c8787dcb42ba4b4ca70d9199fa1d02f, type: 2}
 --- !u!1001 &829800961
 PrefabInstance:
   m_ObjectHideFlags: 0

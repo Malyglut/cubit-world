@@ -14,3 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _cubitSize: 1
   _cubitsPerCubeAxis: 3
+  _hotbarSlotCount: 9
+  _inventoryDimensions: {x: 4, y: 4}

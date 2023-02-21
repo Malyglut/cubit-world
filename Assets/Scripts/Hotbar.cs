@@ -15,10 +15,10 @@ namespace Malyglut.CubitWorld
         private Transform _slotsParent;
 
         [SerializeField]
-        private int _slotCount = 9;
+        private GameEvent _hotbarSelection;
 
         [SerializeField]
-        private GameEvent _hotbarSelection;
+        private GameSettings _gameSettings;
 
         private readonly List<InventorySlot> _slots = new();
         private int _selectedSlotIdx = -1;
@@ -33,7 +33,7 @@ namespace Malyglut.CubitWorld
 
         private void Awake()
         {
-            for (var i = 0; i < _slotCount; i++)
+            for (var i = 0; i < _gameSettings.HotbarSlotCount; i++)
             {
                 var slot = Instantiate(_slotPrefab, _slotsParent);
                 slot.Refresh(null, 0);
@@ -53,7 +53,7 @@ namespace Malyglut.CubitWorld
         public void RefreshMarbles(CubitData cubitData, int amount)
         {
             var marbleSlot = _slots
-                .FirstOrDefault(slot => slot.Data is CubitData slotCubit && slotCubit == cubitData);
+                .FirstOrDefault(slot => slot.Data == cubitData);
 
             if (marbleSlot != null)
             {
@@ -116,10 +116,10 @@ namespace Malyglut.CubitWorld
         {
             if (slotIdx < 0)
             {
-                slotIdx = _slotCount - 1;
+                slotIdx = _gameSettings.HotbarSlotCount - 1;
             }
 
-            if (slotIdx >= _slotCount)
+            if (slotIdx >= _gameSettings.HotbarSlotCount)
             {
                 slotIdx = 0;
             }
@@ -194,12 +194,12 @@ namespace Malyglut.CubitWorld
 
         public bool HasShape(ShapeData shapeData)
         {
-            return _slots.Any(slot => slot.Data is ShapeData shape && shape == shapeData);
+            return _slots.Any(slot => slot.Data == shapeData);
         }
 
         public void RemoveShape(ShapeData shapeData)
         {
-            var shapeSlot = _slots.First(slot => slot.Data is ShapeData shape && shape == shapeData);
+            var shapeSlot = _slots.First(slot => slot.Data == shapeData);
             ClearSlot(shapeSlot);
         }
     }

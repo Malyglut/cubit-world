@@ -1,6 +1,5 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using Cinemachine;
-using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -22,9 +21,6 @@ namespace Malyglut.CubitWorld
         private InventorySlot _slotPrefab;
 
         [SerializeField]
-        private Vector2Int _inventroyDimensions = Vector2Int.one;
-
-        [SerializeField]
         private GridLayoutGroup _gridLayout;
 
         [SerializeField]
@@ -39,9 +35,6 @@ namespace Malyglut.CubitWorld
         [FormerlySerializedAs("_shapeInventoryUpdate"), SerializeField]
         private GameEvent _shapeAddedToInventory;
 
-        private bool _isShown;
-        private CubitData _selectedCubit;
-
         [SerializeField]
         private GameEvent _inventoryOpened;
 
@@ -54,19 +47,27 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private GameEvent _slotClicked;
 
+        [SerializeField]
+        private GameSettings _gameSettings;
+
         private InventorySlot _selectedSlot;
+        private bool _isShown;
+        private List<InventorySlot> _slots = new();
 
         private void Start()
         {
             _gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-            _gridLayout.constraintCount = _inventroyDimensions.y;
+            var inventoryDimensions = _gameSettings.InventoryDimensions;
+            _gridLayout.constraintCount = inventoryDimensions.y;
 
-            var slotCount = _inventroyDimensions.x * _inventroyDimensions.y;
+            var slotCount = inventoryDimensions.x * inventoryDimensions.y;
 
             for (int i = 0; i < slotCount; i++)
             {
                 var slot = Instantiate(_slotPrefab, _slotsParent);
                 slot.Refresh(null, 0);
+
+                _slots.Add(slot);
             }
 
             _marbleInventoryUpdate.Subscribe(UpdateMarbles);
@@ -102,9 +103,14 @@ namespace Malyglut.CubitWorld
         {
             var marbleCount = (MarbleCount)marbleCountObject;
 
-            if (marbleCount.Data == _selectedCubit && marbleCount.Count <= 0)
+            if (marbleCount.Data == null)
             {
-                UpdateSelectedCubit(null);
+                return;
+            }
+
+            if (_selectedSlot!= null && _selectedSlot.Data == marbleCount.Data && marbleCount.Count <= 0)
+            {
+                UpdateSelectedSlot(null);
             }
 
             if (_hotbar.HasEmptySlots || _hotbar.HasMarble(marbleCount.Data))
@@ -121,12 +127,16 @@ namespace Malyglut.CubitWorld
             {
                 _selectedSlot.Deselect();
             }
-            
+
             _selectedSlot = slot;
 
             if (slot.Data is CubitData cubitData)
             {
-                UpdateSelectedCubit(cubitData);
+                UpdateSelectedSlot(cubitData);
+            }
+            else
+            {
+                UpdateSelectedSlot(null);
             }
 
             if (slot.Data == null)
@@ -137,9 +147,8 @@ namespace Malyglut.CubitWorld
             _selectedSlot.Select();
         }
 
-        private void UpdateSelectedCubit(CubitData cubitData)
+        private void UpdateSelectedSlot(CubitData cubitData)
         {
-            _selectedCubit = cubitData;
             _shapeBuilder.ChangeCubit(cubitData);
         }
 
@@ -170,7 +179,7 @@ namespace Malyglut.CubitWorld
                 _selectedSlot.Deselect();
                 _selectedSlot = null;
             }
-            
+
             _inventoryClosed.Raise();
         }
 
