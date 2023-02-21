@@ -3,8 +3,7 @@ using UnityEngine;
 
 namespace Malyglut.CubitWorld
 {
-    [CreateAssetMenu(fileName = "Shape Data", menuName = "Cubit World/Shape Data", order = 0)]
-    public class ShapeData : ScriptableObject, IPlaceableData
+    public class ShapeData : IPlaceableData
     {
         public Dictionary<Vector3Int, Cubit> ShapeBlueprint = new();
         public Mesh Mesh;

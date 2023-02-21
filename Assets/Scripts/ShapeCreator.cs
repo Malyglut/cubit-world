@@ -42,11 +42,13 @@ namespace Malyglut.CubitWorld
             }
 
             _cube.CombineMeshes();
-            
-            var shapeData = ScriptableObject.CreateInstance<ShapeData>();
-            shapeData.ShapeBlueprint = shapeBlueprint;
-            shapeData.Mesh = _cube.Mesh;
-            shapeData.Materials = _cube.Materials;
+
+            var shapeData = new ShapeData
+            {
+                ShapeBlueprint = new Dictionary<Vector3Int, Cubit>(shapeBlueprint),
+                Mesh = _cube.Mesh,
+                Materials = _cube.Materials
+            };
 
             return shapeData;
         }

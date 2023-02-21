@@ -39,11 +39,20 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private GameEvent _marbleInventoryUpdate;
         
-        [SerializeField]
-        private GameEvent _shapeInventoryUpdate;
+        [FormerlySerializedAs("_shapeInventoryUpdate"),SerializeField]
+        private GameEvent _shapeAddedToInventory;
 
         private bool _isShown;
         private CubitData _selectedCubit;
+
+        [SerializeField]
+        private GameEvent _inventoryOpened;
+        
+        [SerializeField]
+        private GameEvent _inventoryClosed;
+        
+        [SerializeField]
+        private GameEvent _shapeRemovedFromInventory;
 
         private void Awake()
         {
@@ -63,12 +72,24 @@ namespace Malyglut.CubitWorld
             _hotbar.OnSlotClick += HandleSlotClick;
             
             _marbleInventoryUpdate.Subscribe(UpdateMarbles);
-            _shapeInventoryUpdate.Subscribe(UpdateShapes);
+            _shapeAddedToInventory.Subscribe(AddShape);
+            _shapeRemovedFromInventory.Subscribe(RemoveShape);
+            
 
-            Hide();
+            Close();
         }
 
-        private void UpdateShapes(object shapeDataObject)
+        private void RemoveShape(object shapeDataObject)
+        {
+            var shapeData = (ShapeData)shapeDataObject;
+
+            if (_hotbar.HasShape(shapeData))
+            {
+                _hotbar.RemoveShape(shapeData);
+            }
+        }
+
+        private void AddShape(object shapeDataObject)
         {
             var shapeData = (ShapeData)shapeDataObject;
 
@@ -115,35 +136,32 @@ namespace Malyglut.CubitWorld
             _shapeBuilder.ChangeCubit(cubitData);
         }
 
-        [Button]
-        public void Show()
+        private void Open()
         {
             _isShown = true;
             _virtualCamera.Priority = 1000;
             _shapeBuilder.gameObject.SetActive(true);
             _interface.SetActive(true);
-            
-            Cursor.visible = true;
-            Cursor.lockState = CursorLockMode.None;
 
             _hotbar.HideSelection();
-            
             _shapeBuilder.ChangeCubit(null);
             _selection.SetActive(false);
+
+            _inventoryOpened.Raise();
         }
 
-        [Button]
-        public void Hide()
+        private void Close()
         {
             _isShown = false;
             _virtualCamera.Priority = -1;
             _shapeBuilder.gameObject.SetActive(false);
             _interface.SetActive(false);
             
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
+            
 
             _hotbar.ShowSelection();
+            
+            _inventoryClosed.Raise();
         }
 
         private void Update()
@@ -152,11 +170,11 @@ namespace Malyglut.CubitWorld
             {
                 if (_isShown)
                 {
-                    Hide();
+                    Close();
                 }
                 else
                 {
-                    Show();
+                    Open();
                 }
             }
         }

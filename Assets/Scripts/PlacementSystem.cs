@@ -47,6 +47,7 @@ namespace Malyglut.CubitWorld
         public void HidePreview()
         {
             _cubitPreview.gameObject.SetActive(false);
+            _shapePreview.gameObject.SetActive(false);
         }
 
         public void UpdatePreviewPosition(IPlaceableData selectedPlaceableData, Cubit targetCubit,

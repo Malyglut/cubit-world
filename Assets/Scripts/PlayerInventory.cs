@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Malyglut.CubitWorld
 {
@@ -7,9 +8,12 @@ namespace Malyglut.CubitWorld
     {
         [SerializeField]
         private GameEvent _marbleInventoryUpdate;
-        
-        [SerializeField]
-        private GameEvent _shapeInventoryUpdate;
+
+        [FormerlySerializedAs("_shapeInventoryAdded"),FormerlySerializedAs("_shapeInventoryUpdate"), SerializeField]
+        private GameEvent _shapeAddedToInventory;
+
+        [FormerlySerializedAs("_shapeInventoryRemoved"),SerializeField]
+        private GameEvent _shapeRemovedFromInventory;
 
         private readonly Dictionary<CubitData, int> _marbles = new();
         private readonly List<ShapeData> _shapes = new();
@@ -40,8 +44,23 @@ namespace Malyglut.CubitWorld
         public void AddShape(ShapeData shapeData)
         {
             _shapes.Add(shapeData);
+            _shapeAddedToInventory.Raise(shapeData);
+        }
 
-            _shapeInventoryUpdate.Raise(shapeData);
+        public void RemoveShape(ShapeData shapeData)
+        {
+            _shapes.Remove(shapeData);
+            _shapeRemovedFromInventory.Raise(shapeData);
+        }
+
+        public bool HasShape(ShapeData shapeData)
+        {
+            return _shapes.Contains(shapeData);
+        }
+
+        public int MarbleCount(CubitData cubitData)
+        {
+            return _marbles.ContainsKey(cubitData) ? _marbles[cubitData] : 0;
         }
     }
 }

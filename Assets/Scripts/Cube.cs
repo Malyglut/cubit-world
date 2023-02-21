@@ -42,6 +42,11 @@ namespace Malyglut.CubitWorld
 
         public void Add(Cubit cubit)
         {
+            if (_cubits.Contains(cubit))
+            {
+                return;
+            }
+            
             _cubits.Add(cubit);
 
             if (!_cubitsReward.ContainsKey(cubit.Data))
@@ -78,10 +83,7 @@ namespace Malyglut.CubitWorld
 
         private void DestroyCube()
         {
-            Debug.Log("Cube destroyed");
-
             OnDestroy.Invoke(this);
-            
             Destroy(gameObject);
         }
 

@@ -4,13 +4,15 @@ using System.Linq;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.UI;
 
 namespace Malyglut.CubitWorld
 {
     public class ShapeBuilder : MonoBehaviour
     {
         private const float SHAPE_EXTENTS_ERROR_TOLERANCE = .000025f;
-        
+        private const int MIN_CUBITS_REQUIRED = 2;
+
         [SerializeField]
         private Camera _camera;
 
@@ -43,6 +45,10 @@ namespace Malyglut.CubitWorld
 
         [SerializeField]
         private ShapeCreator _shapeCreator;
+        
+        
+        [SerializeField]
+        private Button _createShapeButton;
 
         private float _cubitSize;
         private Quaternion _initialRotation;
@@ -56,14 +62,23 @@ namespace Malyglut.CubitWorld
         private void OnEnable()
         {
             transform.rotation = _initialRotation;
+            UpdateButtons();
+        }
+
+        private void UpdateButtons()
+        {
+            _createShapeButton.interactable = _shapeBlueprint.Count >= MIN_CUBITS_REQUIRED;
         }
 
         private void Awake()
         {
             _cubitSize = 1f / _gameSettings.CubitsPerCubeAxis;
             _initialRotation = _shapeContainer.rotation;
-            _placementPreview.gameObject.SetActive(false);
             CalculateMaxShapeExtents();
+            
+            _createShapeButton.onClick.AddListener(BuildShape);
+
+            _placementPreview.gameObject.SetActive(false);
         }
 
         private void CalculateMaxShapeExtents()
@@ -81,7 +96,7 @@ namespace Malyglut.CubitWorld
             else
             {
                 var cubitSize = _gameSettings.CubitCellSize;
-                var cubitLayersFromCenter =(int)(_gameSettings.CubitsPerCubeAxis / 2f);
+                var cubitLayersFromCenter = (int)(_gameSettings.CubitsPerCubeAxis / 2f);
                 _maxShapeExtents = cubitSize * cubitLayersFromCenter;
             }
 
@@ -140,7 +155,7 @@ namespace Malyglut.CubitWorld
             var cubitPosition = _placementPreview.transform.position;
             var gridIdx = Utils.GridIndex(_cubitsParent.InverseTransformPoint(cubitPosition),
                 _gameSettings.CubitCellSize);
-            
+
             var cubit = Instantiate(_cubitPrefab, cubitPosition, _cubitsParent.rotation,
                 _cubitsParent);
             cubit.transform.localScale = Vector3.one * _cubitSize;
@@ -151,15 +166,19 @@ namespace Malyglut.CubitWorld
             _shapeBlueprint.Add(gridIdx, cubit);
 
             _playerInventory.SubtractMarbles(_selectedCubit, 1);
+            
+            UpdateButtons();
         }
 
         private void DestroyCubit(Cubit cubit)
         {
             var gridIdx = _shapeBlueprint.First(data => data.Value == cubit).Key;
-            
+
             Destroy(cubit.gameObject);
             _playerInventory.AddMarbles(cubit.Data, 1);
             _shapeBlueprint.Remove(gridIdx);
+            
+            UpdateButtons();
         }
 
         private void UpdatePreview()
@@ -171,8 +190,8 @@ namespace Malyglut.CubitWorld
                 if (Physics.Raycast(ray, out var hit, 10000f, _shapePreviewLayer | _cubitsLayer))
                 {
                     var cubitPosition = CubitPosition(hit.point + hit.normal * (_cubitSize * .5f));
-                    
-                    if(IsInsideShape(cubitPosition))
+
+                    if (IsInsideShape(cubitPosition))
                     {
                         _placementPreview.gameObject.SetActive(true);
 
@@ -181,7 +200,7 @@ namespace Malyglut.CubitWorld
                     }
                     else
                     {
-                        _placementPreview.gameObject.SetActive(false);                        
+                        _placementPreview.gameObject.SetActive(false);
                     }
                 }
                 else
@@ -194,7 +213,7 @@ namespace Malyglut.CubitWorld
         private bool IsInsideShape(Vector3 cubitPosition)
         {
             var localCubitPosition = _cubitsParent.InverseTransformPoint(cubitPosition);
-            
+
             return Mathf.Abs(localCubitPosition.x) <= _maxShapeExtents
                    && Mathf.Abs(localCubitPosition.y) <= _maxShapeExtents
                    && Mathf.Abs(localCubitPosition.z) <= _maxShapeExtents;
@@ -270,12 +289,23 @@ namespace Malyglut.CubitWorld
             }
         }
 
-        [Button]
         private void BuildShape()
         {
+            if (_shapeBlueprint.Count < MIN_CUBITS_REQUIRED)
+            {
+                return;
+            }
+
             var shapeData = _shapeCreator.BuildShape(_shapeBlueprint);
 
             _playerInventory.AddShape(shapeData);
+            
+            foreach (var shapeIdx in _shapeBlueprint.Keys)
+            {
+                Destroy(_shapeBlueprint[shapeIdx].gameObject);
+            }
+            
+            _shapeBlueprint.Clear();
         }
     }
 }

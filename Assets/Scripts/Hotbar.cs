@@ -22,9 +22,6 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private int _slotCount = 9;
         
-        // [FormerlySerializedAs("_marbleAddedToInventory"),SerializeField]
-        // private GameEvent _marbleInventoryUpdate;
-
         [SerializeField]
         private GameEvent _hotbarSelection;
 
@@ -37,7 +34,7 @@ namespace Malyglut.CubitWorld
 
         public bool HasMarble(CubitData cubitData)
         {
-            return _slotsData.Any(slotData => slotData.Value == cubitData);
+            return _slotsData.Any(slotData => slotData.Value is CubitData slotCubit && slotCubit == cubitData);
         }
         
         private void Awake()
@@ -52,8 +49,6 @@ namespace Malyglut.CubitWorld
                 _slots.Add(slot);
                 _slotsData.Add(slot, null);
             }
-            //
-            // _marbleInventoryUpdate.Subscribe(HandleMarbleUpdate);
 
             StartCoroutine(UpdateSelectionOnStart());
         }
@@ -71,7 +66,7 @@ namespace Malyglut.CubitWorld
 
         public void RefreshMarbles(CubitData cubitData, int amount)
         {
-            var marbleSlot = _slotsData.FirstOrDefault(slotData => slotData.Value == cubitData).Key;
+            var marbleSlot = _slotsData.FirstOrDefault(slotData => slotData.Value is CubitData slotCubit && slotCubit == cubitData).Key;
             
             if (marbleSlot != null)
             {
@@ -99,10 +94,15 @@ namespace Malyglut.CubitWorld
             }
             else
             {
-                _slotsData[slot] = null;
-                slot.Refresh(null, 0);
-                UpdateIfSelected(slot);
+                ClearSlot(slot);
             }
+        }
+
+        private void ClearSlot(InventorySlot slot)
+        {
+            _slotsData[slot] = null;
+            slot.Refresh(null, 0);
+            UpdateIfSelected(slot);
         }
 
         private void TryPlaceMarbleInEmptySlot(CubitData cubitData, int amount)
@@ -186,6 +186,17 @@ namespace Malyglut.CubitWorld
         {
             _inventoryOpen = true;
             _selection.gameObject.SetActive(false);
+        }
+
+        public bool HasShape(ShapeData shapeData)
+        {
+            return _slotsData.Any(slotData => slotData.Value is ShapeData shape && shape == shapeData);
+        }
+
+        public void RemoveShape(ShapeData shapeData)
+        {
+            var shapeSlot = _slotsData.First(slotData => slotData.Value is ShapeData shape && shape == shapeData).Key;
+            ClearSlot(shapeSlot);
         }
     }
 }

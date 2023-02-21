@@ -24,8 +24,8 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private PlacementSystem _placement;
 
-        [SerializeField]
-        private PlayerInventory _playerInventory;
+        [FormerlySerializedAs("_playerInventory"),SerializeField]
+        private PlayerInventory _inventory;
 
         [SerializeField]
         private GameEvent _hotbarSelection;
@@ -38,19 +38,51 @@ namespace Malyglut.CubitWorld
 
         [SerializeField, Range(1f, 25f)]
         private float _interactionRange = 5f;
+        
+        [SerializeField]
+        private GameEvent _inventoryOpened;
+        
+        [SerializeField]
+        private GameEvent _inventoryClosed;
 
         private bool _destroyingCube;
         private Cube _targetCube;
 
+        private bool _isSuspended;
+
         private void Awake()
         {
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
+            Unsuspend();
 
-            _hotbarSelection.Subscribe(HandleMarbleSelected);
+            _hotbarSelection.Subscribe(UpdateSelectedPlaceable);
+            _inventoryOpened.Subscribe(Suspend);
+            _inventoryClosed.Subscribe(Unsuspend);
         }
 
-        private void HandleMarbleSelected(object placeableDataObject)
+        private void Suspend()
+        {
+            _isSuspended = true;
+            
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+
+            _placement.HidePreview();
+            
+            if(_targetCube!=null)
+            {
+                StopDestroyingCube();
+            }
+        }
+
+        private void Unsuspend()
+        {
+            _isSuspended = false;
+            
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+        }
+
+        private void UpdateSelectedPlaceable(object placeableDataObject)
         {
             _selectedPlaceableData = (IPlaceableData)placeableDataObject;
             _placement.UpdatePreviewVisual(_selectedPlaceableData);
@@ -58,6 +90,11 @@ namespace Malyglut.CubitWorld
 
         private void Update()
         {
+            if (_isSuspended)
+            {
+                return;
+            }
+            
             UpdatePreview();
             ProcessInput();
             HandleCubeDestructionProgress();
@@ -104,12 +141,12 @@ namespace Malyglut.CubitWorld
         {
             var forwardSpeed = Input.GetAxis("Vertical") * _moveSpeed;
             var sideSpeed = Input.GetAxis("Horizontal") * _moveSpeed;
-            var upSpeed = Input.GetKey(KeyCode.Space) ? 1f : 0f * _moveSpeed;
-
+            var upSpeed = (Input.GetKey(KeyCode.Space) ? 1f : 0f)* _moveSpeed;
+            
             var cameraTransform = _camera.transform;
             
             var moveVector = cameraTransform.forward * forwardSpeed + cameraTransform.right * sideSpeed +
-                             cameraTransform.up * upSpeed;
+                             Vector3.up * upSpeed;
             
             transform.position += moveVector * Time.deltaTime;
         }
@@ -147,13 +184,20 @@ namespace Malyglut.CubitWorld
 
         private void PlaceShape(ShapeData shapeData)
         {
-            _placement.PlaceShape(shapeData);
+            if(_inventory.HasShape(shapeData))
+            {
+                _placement.PlaceShape(shapeData);
+                _inventory.RemoveShape(shapeData);
+            }
         }
 
         private void PlaceCubit(CubitData cubitData)
         {
-            _placement.PlaceCubit(cubitData);
-            _playerInventory.SubtractMarbles(cubitData, 1);
+            if(_inventory.MarbleCount(cubitData) > 0)
+            {
+                _placement.PlaceCubit(cubitData);
+                _inventory.SubtractMarbles(cubitData, 1);
+            }
         }
 
         private void HandleCubeDestructionProgress()
@@ -193,7 +237,7 @@ namespace Malyglut.CubitWorld
 
             foreach (var cubitData in cubitsReward.Keys)
             {
-                _playerInventory.AddMarbles(cubitData, cubitsReward[cubitData]);
+                _inventory.AddMarbles(cubitData, cubitsReward[cubitData]);
             }
 
             _destroyingCube = false;
@@ -259,20 +303,6 @@ namespace Malyglut.CubitWorld
                     Gizmos.DrawWireCube(cubePosition, Vector3.one * _gameSettings.CubeSize);
                     Gizmos.DrawWireCube(cubitPosition, Vector3.one * _gameSettings.CubitSize);
                 }
-            }
-        }
-
-        [Button]
-        public void PlaceShape()
-        {
-            var raycastHit = RaycastPlane();
-
-            if (raycastHit.HasValue)
-            {
-                var hit = raycastHit.Value;
-
-                // _placement.UpdatePreview(hit.point);
-                // _placement.PlaceShape(hit.point, _shapeData);
             }
         }
     }
