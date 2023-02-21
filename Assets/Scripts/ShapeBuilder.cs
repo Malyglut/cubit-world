@@ -5,6 +5,8 @@ namespace Malyglut.CubitWorld
 {
     public class ShapeBuilder : MonoBehaviour
     {
+        private const float SHAPE_EXTENTS_ERROR_TOLERANCE = .000025f;
+        
         [SerializeField]
         private Camera _camera;
 
@@ -39,6 +41,7 @@ namespace Malyglut.CubitWorld
         private Quaternion _initialRotation;
         private CubitData _selectedCubit;
         private bool _rotationInProgress;
+        private float _maxShapeExtents;
         private bool HasValidPlacementPosition => _placementPreview.gameObject.activeSelf;
 
         private void OnEnable()
@@ -51,6 +54,29 @@ namespace Malyglut.CubitWorld
             _cubitSize = 1f / _gameSettings.CubitsPerCubeAxis;
             _initialRotation = _shapeContainer.rotation;
             _placementPreview.gameObject.SetActive(false);
+            CalculateMaxShapeExtents();
+        }
+
+        private void CalculateMaxShapeExtents()
+        {
+            var isEven = _gameSettings.CubitsPerCubeAxis % 2 == 0;
+
+            if (isEven)
+            {
+                var startingPosition = 1f / _gameSettings.CubitsPerCubeAxis;
+                var halfCubitSize = _gameSettings.CubitLocalSize * .5f;
+                var cubitLayers = _gameSettings.CubitsPerCubeAxis / 2;
+
+                _maxShapeExtents = startingPosition + halfCubitSize * (cubitLayers - 1);
+            }
+            else
+            {
+                var cubitSize = _gameSettings.CubitLocalSize;
+                var cubitLayersFromCenter =(int)(_gameSettings.CubitsPerCubeAxis / 2f);
+                _maxShapeExtents = cubitSize * cubitLayersFromCenter;
+            }
+
+            _maxShapeExtents += SHAPE_EXTENTS_ERROR_TOLERANCE;
         }
 
         private void Update()
@@ -126,17 +152,34 @@ namespace Malyglut.CubitWorld
 
                 if (Physics.Raycast(ray, out var hit, 10000f, _shapePreviewLayer | _cubitsLayer))
                 {
-                    _placementPreview.gameObject.SetActive(true);
-
                     var cubitPosition = CubitPosition(hit.point + hit.normal * (_cubitSize * .5f));
-                    _placementPreview.transform.position = cubitPosition;
-                    _placementPreview.transform.rotation = _cubitsParent.rotation;
+                    
+                    if(IsInsideShape(cubitPosition))
+                    {
+                        _placementPreview.gameObject.SetActive(true);
+
+                        _placementPreview.transform.position = cubitPosition;
+                        _placementPreview.transform.rotation = _cubitsParent.rotation;
+                    }
+                    else
+                    {
+                        _placementPreview.gameObject.SetActive(false);                        
+                    }
                 }
                 else
                 {
                     _placementPreview.gameObject.SetActive(false);
                 }
             }
+        }
+
+        private bool IsInsideShape(Vector3 cubitPosition)
+        {
+            var localCubitPosition = _cubitsParent.InverseTransformPoint(cubitPosition);
+            
+            return Mathf.Abs(localCubitPosition.x) <= _maxShapeExtents
+                   && Mathf.Abs(localCubitPosition.y) <= _maxShapeExtents
+                   && Mathf.Abs(localCubitPosition.z) <= _maxShapeExtents;
         }
 
         private void HandleRotation()
