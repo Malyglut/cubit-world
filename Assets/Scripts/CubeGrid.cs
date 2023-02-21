@@ -101,10 +101,6 @@ namespace Malyglut.CubitWorld
 
         private Vector3 GridPosition(Vector3 position, float granularity)
         {
-            // var x = GridIndex(position.x, granularity);
-            // var y = GridIndex(position.y, granularity);
-            // var z = GridIndex(position.z, granularity);
-
             var x = Mathf.Round(position.x / granularity) * granularity;
             var y = Mathf.Round(position.y / granularity) * granularity;
             var z = Mathf.Round(position.z / granularity) * granularity;
@@ -113,19 +109,6 @@ namespace Malyglut.CubitWorld
             gridPosition.y += _gameSettings.CubeSize * .5f;
             
             return gridPosition;
-        }
-
-        private int GridIndex(float positionComponent, float granularity)
-        {
-            var size = granularity;
-            var halfSize = size * .5f;
-
-            var idx = (int)(positionComponent / size);
-            var remainder = positionComponent % size;
-
-            idx += (int)(remainder / halfSize);
-
-            return idx;
         }
 
         private void OnDrawGizmos()

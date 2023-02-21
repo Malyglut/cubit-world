@@ -38,7 +38,7 @@ namespace Malyglut.CubitWorld
 
         [SerializeField, Range(1f, 25f)]
         private float _interactionRange = 5f;
-        
+
         private bool _destroyingCube;
         private Cube _targetCube;
 
@@ -53,17 +53,24 @@ namespace Malyglut.CubitWorld
         private void HandleMarbleSelected(object cubitDataObject)
         {
             _selectedCubitData = (CubitData)cubitDataObject;
+            _placement.UpdatePreview(_selectedCubitData);
+
+            if (_selectedCubitData == null)
+            {
+                _placement.HidePreview();
+            }
         }
 
         private void Update()
         {
+            UpdatePreview();
             ProcessInput();
             HandleCubeDestructionProgress();
         }
 
-        private void ProcessInput()
+        private void UpdatePreview()
         {
-            if (_selectedCubitData != null && Input.GetMouseButtonDown(1))
+            if (_selectedCubitData != null)
             {
                 var raycastHit = RaycastCubits();
 
@@ -71,8 +78,9 @@ namespace Malyglut.CubitWorld
                 {
                     var hit = raycastHit.Value;
                     var targetCubit = hit.transform.GetComponentInParent<Cubit>();
-                    _placement.PlaceCubit(targetCubit, hit.normal, _selectedCubitData);
-                    _playerInventory.SubtractMarbles(_selectedCubitData, 1);
+                    _placement.UpdatePreview(targetCubit, hit.normal);
+                    // _placement.PlaceCubit(targetCubit, hit.normal, _selectedCubitData);
+                    // _playerInventory.SubtractMarbles(_selectedCubitData, 1);
                 }
                 else
                 {
@@ -82,14 +90,50 @@ namespace Malyglut.CubitWorld
                     {
                         var hit = raycastHit.Value;
 
-                        var cubePosition = _grid.WorldPositionToCubePosition(hit.point);
-                        var cubitPosition = _grid.WorldPositionToCubitPosition(hit.point);
-                        Debug.Log($"Plane position: {hit.point}, Cube position: {cubePosition}, Cubit position: {cubitPosition}");
-
-                        _placement.PlaceCubit(hit.point, _selectedCubitData);
-                        _playerInventory.SubtractMarbles(_selectedCubitData, 1);
+                        _placement.UpdatePreview(hit.point);
+                        
+                        // _placement.PlaceCubit(hit.point, _selectedCubitData);
+                        // _playerInventory.SubtractMarbles(_selectedCubitData, 1);
+                    }
+                    else
+                    {
+                        _placement.HidePreview();
                     }
                 }
+            }
+        }
+
+        private void ProcessInput()
+        {
+            if (_selectedCubitData != null && Input.GetMouseButtonDown(1))
+            {
+                if (_placement.HasValidPlacementPosition)
+                {
+                    _placement.PlaceCubit(_selectedCubitData);
+                    _playerInventory.SubtractMarbles(_selectedCubitData, 1);
+                }
+                
+                // var raycastHit = RaycastCubits();
+                //
+                // if (raycastHit.HasValue)
+                // {
+                //     var hit = raycastHit.Value;
+                //     var targetCubit = hit.transform.GetComponentInParent<Cubit>();
+                //     _placement.PlaceCubit(targetCubit, hit.normal, _selectedCubitData);
+                //     _playerInventory.SubtractMarbles(_selectedCubitData, 1);
+                // }
+                // else
+                // {
+                //     raycastHit = RaycastPlane();
+                //
+                //     if (raycastHit.HasValue)
+                //     {
+                //         var hit = raycastHit.Value;
+                //
+                //         _placement.PlaceCubit(hit.point, _selectedCubitData);
+                //         _playerInventory.SubtractMarbles(_selectedCubitData, 1);
+                //     }
+                // }
             }
 
             if (Input.GetMouseButtonDown(0))
@@ -142,7 +186,7 @@ namespace Malyglut.CubitWorld
             
             foreach (var cubitData in cubitsReward.Keys)
             {
-                _playerInventory.Add(cubitData, cubitsReward[cubitData]);
+                _playerInventory.AddMarbles(cubitData, cubitsReward[cubitData]);
             }
 
             _destroyingCube = false;

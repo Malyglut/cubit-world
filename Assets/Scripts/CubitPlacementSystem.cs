@@ -9,46 +9,24 @@ namespace Malyglut.CubitWorld
 
         [SerializeField]
         private CubeGrid _grid;
-        
+
         [SerializeField]
         private Cubit _cubitPrefab;
 
-        public void PlaceCubit(Cubit targetCubit, Vector3 placementDirection, CubitData cubitData)
-        {
-            var targetCube = targetCubit.Cube;
-            var cubitPosition = targetCubit.transform.position + placementDirection * _gameSettings.CubitSize;
+        [SerializeField]
+        private CubitPreview _placementPreview;
 
-            Cube parentCube;
-            
-            if (IsCubitInsideCube(targetCube, cubitPosition))
-            {
-                parentCube = targetCube;
-            }
-            else
-            {
-                var adjacentCubePosition = targetCube.transform.position + placementDirection * _gameSettings.CubeSize;
-                parentCube = _grid[adjacentCubePosition];
-            }
-            
-            SpawnCubit(cubitPosition, parentCube, cubitData);
+        public bool HasValidPlacementPosition => _placementPreview.gameObject.activeSelf;
+
+        private void Awake()
+        {
+            HidePreview();
         }
 
-        private bool IsCubitInsideCube(Cube targetCube, Vector3 cubitPosition)
+        public void PlaceCubit(CubitData cubitData)
         {
-            var newCubitLocalPosition = targetCube.transform.InverseTransformPoint(cubitPosition);
-            
-            var isInsideCube =  Mathf.Abs(newCubitLocalPosition.x) <= _gameSettings.CubeMaxExtents
-                                && Mathf.Abs(newCubitLocalPosition.y) <= _gameSettings.CubeMaxExtents
-                                && Mathf.Abs(newCubitLocalPosition.z) <= _gameSettings.CubeMaxExtents;
-
-            return isInsideCube;
-        }
-
-        public void PlaceCubit(Vector3 worldPosition, CubitData cubitData)
-        {
-            var cube = _grid.WorldPositionToCube(worldPosition);
-            var cubitPosition = _grid.WorldPositionToCubitPosition(worldPosition);
-
+            var cubitPosition = _placementPreview.transform.position;
+            var cube = _grid.WorldPositionToCube(cubitPosition);
             SpawnCubit(cubitPosition, cube, cubitData);
         }
 
@@ -60,6 +38,37 @@ namespace Malyglut.CubitWorld
             newCubit.Initialize(cubitData, parentCube);
             newCubit.PlayPlacementAnimation();
             parentCube.Add(newCubit);
+        }
+
+        public void HidePreview()
+        {
+            _placementPreview.gameObject.SetActive(false);
+        }
+
+        public void UpdatePreview(Cubit targetCubit, Vector3 placementDirection)
+        {
+            UpdatePreviewInternal(targetCubit.transform.position + placementDirection * _gameSettings.CubitSize);
+        }
+
+        public void UpdatePreview(Vector3 position)
+        {
+            UpdatePreviewInternal(_grid.WorldPositionToCubitPosition(position));
+        }
+
+        private void UpdatePreviewInternal(Vector3 position)
+        {
+            _placementPreview.gameObject.SetActive(true);
+            _placementPreview.transform.position = position;
+        }
+
+        public void UpdatePreview(CubitData cubitData)
+        {
+            _placementPreview.gameObject.SetActive(cubitData != null);
+
+            if (cubitData != null)
+            {
+                _placementPreview.UpdateColor(cubitData.Color);
+            }
         }
     }
 }
