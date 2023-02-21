@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7746220762585209155}
   - component: {fileID: 781605094401213658}
   - component: {fileID: 8463052338774945071}
+  - component: {fileID: 7443018079361089207}
   m_Layer: 7
   m_Name: Cube
   m_TagString: Untagged
@@ -100,3 +101,16 @@ MonoBehaviour:
   _meshRenderer: {fileID: 781605094401213658}
   _destructionTime: 0.2
   _cubits: []
+--- !u!65 &7443018079361089207
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4382792009942432212}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}

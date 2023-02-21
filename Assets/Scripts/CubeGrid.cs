@@ -125,5 +125,10 @@ namespace Malyglut.CubitWorld
         {
             return this[WorldPositionToCubePosition(worldPosition)];
         }
+
+        public bool CubeExists(Vector3 cubePosition)
+        {
+            return _cubes.ContainsKey(cubePosition);
+        }
     }
 }

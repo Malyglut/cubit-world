@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Serialization;
 
 namespace Malyglut.CubitWorld
@@ -16,13 +14,13 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private Cubit _cubitPrefab;
 
-        [FormerlySerializedAs("_placementPreview"),SerializeField]
+        [FormerlySerializedAs("_placementPreview"), SerializeField]
         private CubitPreview _cubitPreview;
 
         [SerializeField]
         private ShapePreview _shapePreview;
 
-        public bool HasValidPlacementPosition => _cubitPreview.gameObject.activeSelf;
+        public bool HasValidPlacementPosition => _cubitPreview.gameObject.activeSelf || _shapePreview.gameObject.activeSelf;
 
         private void Awake()
         {
@@ -54,27 +52,45 @@ namespace Malyglut.CubitWorld
         public void UpdatePreviewPosition(IPlaceableData selectedPlaceableData, Cubit targetCubit,
             Vector3 placementDirection)
         {
-            if(selectedPlaceableData is CubitData)
+            if (selectedPlaceableData is CubitData)
             {
                 UpdateCubitPreview(targetCubit.transform.position + placementDirection * _gameSettings.CubitSize);
             }
 
             if (selectedPlaceableData is ShapeData)
             {
-                
+                var cubePosition = targetCubit.Cube.transform.position + placementDirection * _gameSettings.CubeSize;
+
+                if (_grid.CubeExists(cubePosition))
+                {
+                    _shapePreview.gameObject.SetActive(false);
+                }
+                else
+                {
+                    UpdateShapePreview(cubePosition);
+                }
             }
         }
 
         public void UpdatePreviewPosition(IPlaceableData selectedPlaceableData, Vector3 position)
         {
-            if(selectedPlaceableData is CubitData)
+            if (selectedPlaceableData is CubitData)
             {
                 UpdateCubitPreview(_grid.WorldPositionToCubitPosition(position));
             }
-            
+
             if (selectedPlaceableData is ShapeData)
             {
-                UpdateShapePreview(_grid.WorldPositionToCubePosition(position));
+                var cubePosition = _grid.WorldPositionToCubePosition(position);
+
+                if (_grid.CubeExists(cubePosition))
+                {
+                    _shapePreview.gameObject.SetActive(false);
+                }
+                else
+                {
+                    UpdateShapePreview(cubePosition);
+                }
             }
         }
 
@@ -106,15 +122,15 @@ namespace Malyglut.CubitWorld
             }
         }
 
-        public void PlaceShape(Vector3 referencePosition, Vector3 targetPosition, ShapeData shapeData)
+        public void PlaceShape(ShapeData shapeData)
         {
-            var cube = _grid.WorldPositionToCube(targetPosition);
-            // var shapeBlueprint = RotateShape(referencePosition, targetPosition, shapeData.ShapeBlueprint);
-            
+            var shapePosition = _shapePreview.transform.position;
+            var cube = _grid.WorldPositionToCube(shapePosition);
+
             foreach (var (positionIdx, cubit) in shapeData.ShapeBlueprint)
             {
-                var localPosition = (Vector3)positionIdx * _gameSettings.CubitCellSize; 
-                
+                var localPosition = (Vector3)positionIdx * _gameSettings.CubitCellSize;
+
                 var newCubit = Instantiate(_cubitPrefab);
                 newCubit.transform.localScale = Vector3.one * _gameSettings.CubitSize;
 

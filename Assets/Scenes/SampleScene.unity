@@ -366,6 +366,7 @@ MonoBehaviour:
   _renderer: {fileID: 72607948}
   _filter: {fileID: 72607949}
   _gameSettings: {fileID: 11400000, guid: 9c8787dcb42ba4b4ca70d9199fa1d02f, type: 2}
+  _previewAlpha: 0.45
 --- !u!23 &72607948
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2137,7 +2138,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   _camera: {fileID: 963194227}
-  _moveSpeed: 2
+  _moveSpeed: 10
   _placement: {fileID: 1352829535}
   _playerInventory: {fileID: 807322767}
   _hotbarSelection: {fileID: 11400000, guid: 9ddbef618bbee8c499b1ac060134322c, type: 2}
