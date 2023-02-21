@@ -49,6 +49,9 @@ namespace Malyglut.CubitWorld
         
         [SerializeField]
         private Button _createShapeButton;
+        
+        [SerializeField]
+        private Button _resetButton;
 
         private float _cubitSize;
         private Quaternion _initialRotation;
@@ -68,6 +71,7 @@ namespace Malyglut.CubitWorld
         private void UpdateButtons()
         {
             _createShapeButton.interactable = _shapeBlueprint.Count >= MIN_CUBITS_REQUIRED;
+            _resetButton.interactable = _shapeBlueprint.Count > 0;
         }
 
         private void Awake()
@@ -77,8 +81,20 @@ namespace Malyglut.CubitWorld
             CalculateMaxShapeExtents();
             
             _createShapeButton.onClick.AddListener(BuildShape);
+            _resetButton.onClick.AddListener(ResetShape);
 
             _placementPreview.gameObject.SetActive(false);
+        }
+
+        private void ResetShape()
+        {
+            foreach (var (_,cubit) in _shapeBlueprint)
+            {
+                _playerInventory.AddMarbles(cubit.Data, 1);
+            }
+            
+            ResetState();
+            UpdateButtons();
         }
 
         private void CalculateMaxShapeExtents()
@@ -285,7 +301,7 @@ namespace Malyglut.CubitWorld
 
             if (_selectedCubit != null)
             {
-                _placementPreview.UpdateColor(_selectedCubit.Color);
+                _placementPreview.UpdateVisual(_selectedCubit.Color);
             }
         }
 
@@ -300,11 +316,16 @@ namespace Malyglut.CubitWorld
 
             _playerInventory.AddShape(shapeData);
             
+            ResetState();
+        }
+
+        private void ResetState()
+        {
             foreach (var shapeIdx in _shapeBlueprint.Keys)
             {
                 Destroy(_shapeBlueprint[shapeIdx].gameObject);
             }
-            
+
             _shapeBlueprint.Clear();
         }
     }

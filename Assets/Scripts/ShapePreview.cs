@@ -18,16 +18,39 @@ namespace Malyglut.CubitWorld
         [SerializeField, Range(0f,1f)]
         private float _previewAlpha = .3f;
 
+        [SerializeField]
+        private bool _ignoreCubeScaling;
+
+        [SerializeField]
+        private Material _materialOverride;
+
         private void Awake()
         {
-            transform.localScale = Vector3.one * _gameSettings.CubeSize;
+            if(!_ignoreCubeScaling)
+            {
+                transform.localScale = Vector3.one * _gameSettings.CubeSize;
+            }
         }
 
         public void UpdateVisual(Mesh mesh, Material[] materials)
         {
             _filter.mesh = mesh;
 
-            var alphaMaterials = new List<Material>(materials);
+            var alphaMaterials = new List<Material>();
+
+            if (_materialOverride != null)
+            {
+                foreach (var material in materials)
+                {
+                    var overridenMaterial = Instantiate(_materialOverride);
+                    overridenMaterial.color = material.color;
+                    alphaMaterials.Add(overridenMaterial);
+                }
+            }
+            else
+            {
+                alphaMaterials.AddRange(materials);
+            }
 
             foreach (var material in alphaMaterials)
             {

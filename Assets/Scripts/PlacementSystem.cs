@@ -114,7 +114,7 @@ namespace Malyglut.CubitWorld
 
             if (placeableData is CubitData cubitData)
             {
-                _cubitPreview.UpdateColor(cubitData.Color);
+                _cubitPreview.UpdateVisual(cubitData.Color);
             }
 
             if (placeableData is ShapeData shapeData)
