@@ -19,7 +19,7 @@ namespace Malyglut.CubitWorld
         private GameObject _interface;
 
         [SerializeField]
-        private HotbarSlot _slotPrefab;
+        private InventorySlot _slotPrefab;
 
         [SerializeField]
         private Vector2Int _inventroyDimensions = Vector2Int.one;
@@ -38,6 +38,9 @@ namespace Malyglut.CubitWorld
         
         [SerializeField]
         private GameEvent _marbleInventoryUpdate;
+        
+        [SerializeField]
+        private GameEvent _shapeInventoryUpdate;
 
         private bool _isShown;
         private CubitData _selectedCubit;
@@ -59,12 +62,23 @@ namespace Malyglut.CubitWorld
 
             _hotbar.OnSlotClick += HandleSlotClick;
             
-            _marbleInventoryUpdate.Subscribe(HandleInventoryUpdate);
+            _marbleInventoryUpdate.Subscribe(UpdateMarbles);
+            _shapeInventoryUpdate.Subscribe(UpdateShapes);
 
             Hide();
         }
 
-        private void HandleInventoryUpdate(object marbleCountObject)
+        private void UpdateShapes(object shapeDataObject)
+        {
+            var shapeData = (ShapeData)shapeDataObject;
+
+            if (_hotbar.HasEmptySlots)
+            {
+                _hotbar.AddShape(shapeData);
+            }
+        }
+
+        private void UpdateMarbles(object marbleCountObject)
         {
             var marbleCount = (MarbleCount)marbleCountObject;
 
@@ -79,9 +93,12 @@ namespace Malyglut.CubitWorld
             }
         }
 
-        private void HandleSlotClick(HotbarSlot slot)
+        private void HandleSlotClick(InventorySlot slot)
         {
-            UpdateSelectedCubit(slot.Data);
+            if(slot.Data is CubitData cubitData)
+            {
+                UpdateSelectedCubit(cubitData);
+            }
 
             if (slot.Data == null)
             {

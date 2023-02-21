@@ -9,9 +9,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6f2bb4a4e192457eb747489584e5f7a9, type: 3}
-  m_Name: Green Cubit
+  m_Script: {fileID: 11500000, guid: d7f422ac61174b85be88fcb79fb11e6c, type: 3}
+  m_Name: Shape Inventory Update
   m_EditorClassIdentifier: 
-  _name: Green Cubit
-  _color: {r: 0.44061044, g: 0.745283, b: 0.3058473, a: 1}
-  _inventoryIcon: {fileID: 21300000, guid: f0926ccef95eb42419f007ef66b24791, type: 3}

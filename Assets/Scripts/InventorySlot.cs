@@ -6,9 +6,9 @@ using UnityEngine.UI;
 
 namespace Malyglut.CubitWorld
 {
-    public class HotbarSlot : MonoBehaviour, IPointerDownHandler
+    public class InventorySlot : MonoBehaviour, IPointerDownHandler
     {
-        public event Action<HotbarSlot> OnClick;
+        public event Action<InventorySlot> OnClick;
         
         [SerializeField]
         private TextMeshProUGUI _count;
@@ -19,20 +19,31 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private GameObject _contentsObject;
 
-        public CubitData Data { get; private set; }
+        public IPlaceableData Data { get; private set; }
 
-        public void Refresh(CubitData cubitData, int count)
+        public void Refresh(IPlaceableData data, int count)
         {
-            Data = cubitData;
+            Data = data;
             _contentsObject.SetActive(Data != null && count>0);
             
             if (Data == null)
             {
                 return;
             }
+
+            _icon.sprite = data.Icon;
             
-            _icon.color = cubitData.Color;
+            if(data is CubitData cubitData)
+            {
+                RefreshForCubit(cubitData);
+            }
+            
             RefreshCount(count);
+        }
+
+        private void RefreshForCubit(CubitData cubitData)
+        {
+            _icon.color = cubitData.Color;
         }
 
         public void RefreshCount(int count)

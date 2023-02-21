@@ -18,17 +18,27 @@ namespace Malyglut.CubitWorld
             _hotbarSelection.Subscribe(UpdatePreview);
         }
 
-        private void UpdatePreview(object cubitDataObject)
+        private void UpdatePreview(object placeableDataObject)
         {
-            var cubitData = (CubitData)cubitDataObject;
+            if(placeableDataObject is CubitData cubitData)
+            {
+                UpdateMarblePreview(cubitData);
+            }
+            else
+            {
+                _previewObject.SetActive(false);
+            }
+        }
 
+        private void UpdateMarblePreview(CubitData cubitData)
+        {
             _previewObject.SetActive(cubitData != null);
 
             if (cubitData == null)
             {
                 return;
             }
-            
+
             _renderer.material.color = cubitData.Color;
         }
     }

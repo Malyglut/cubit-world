@@ -27,6 +27,8 @@ namespace Malyglut.CubitWorld
         private bool _isBeingDestroyed;
         
         public IReadOnlyDictionary<CubitData, int> CubitsReward => _cubitsReward;
+        public Mesh Mesh => _meshFilter.sharedMesh;
+        public Material[] Materials => new List<Material>(_meshRenderer.materials).ToArray();
 
         private void Start()
         {
@@ -161,6 +163,12 @@ namespace Malyglut.CubitWorld
         {
             Gizmos.color = Color.blue;
             Gizmos.DrawWireCube(transform.position, transform.localScale);
+        }
+
+        public void ResetState()
+        {
+            _cubits.Clear();
+            _cubitsReward.Clear();
         }
     }
 }

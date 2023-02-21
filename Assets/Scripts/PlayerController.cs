@@ -1,4 +1,5 @@
 ﻿using System;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -18,11 +19,10 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private float _moveSpeed = 2f;
 
-        [FormerlySerializedAs("_selectedCubit"),SerializeField]
-        private CubitData _selectedCubitData;
+        private IPlaceableData _selectedPlaceableData;
 
         [SerializeField]
-        private CubitPlacementSystem _placement;
+        private PlacementSystem _placement;
 
         [SerializeField]
         private PlayerInventory _playerInventory;
@@ -50,15 +50,10 @@ namespace Malyglut.CubitWorld
             _hotbarSelection.Subscribe(HandleMarbleSelected);
         }
 
-        private void HandleMarbleSelected(object cubitDataObject)
+        private void HandleMarbleSelected(object placeableDataObject)
         {
-            _selectedCubitData = (CubitData)cubitDataObject;
-            _placement.UpdatePreview(_selectedCubitData);
-
-            if (_selectedCubitData == null)
-            {
-                _placement.HidePreview();
-            }
+            _selectedPlaceableData = (IPlaceableData)placeableDataObject;
+            _placement.UpdatePreviewVisual(_selectedPlaceableData);
         }
 
         private void Update()
@@ -70,7 +65,7 @@ namespace Malyglut.CubitWorld
 
         private void UpdatePreview()
         {
-            if (_selectedCubitData != null)
+            if (_selectedPlaceableData != null)
             {
                 var raycastHit = RaycastCubits();
 
@@ -78,7 +73,7 @@ namespace Malyglut.CubitWorld
                 {
                     var hit = raycastHit.Value;
                     var targetCubit = hit.transform.GetComponentInParent<Cubit>();
-                    _placement.UpdatePreview(targetCubit, hit.normal);
+                    _placement.UpdatePreviewPosition(_selectedPlaceableData, targetCubit, hit.normal);
                 }
                 else
                 {
@@ -88,7 +83,7 @@ namespace Malyglut.CubitWorld
                     {
                         var hit = raycastHit.Value;
 
-                        _placement.UpdatePreview(hit.point);
+                        _placement.UpdatePreviewPosition(_selectedPlaceableData, hit.point);
                     }
                     else
                     {
@@ -100,11 +95,23 @@ namespace Malyglut.CubitWorld
 
         private void ProcessInput()
         {
-            if (_selectedCubitData != null && Input.GetMouseButtonDown(1))
+            if (_selectedPlaceableData != null && Input.GetMouseButtonDown(1))
             {
-                if (_placement.HasValidPlacementPosition)
+                if (_placement.HasValidPlacementPosition && _selectedPlaceableData is CubitData cubitData)
                 {
-                    PlaceCubit();
+                    PlaceCubit(cubitData);
+                }
+
+                if (_selectedPlaceableData is ShapeData shapeData)
+                {
+                    var raycastHit = RaycastPlane();
+
+                    if (raycastHit.HasValue)
+                    {
+                        var hit = raycastHit.Value;
+
+                        _placement.PlaceShape(transform.position, hit.point, shapeData);
+                    }
                 }
             }
 
@@ -121,10 +128,10 @@ namespace Malyglut.CubitWorld
             }
         }
 
-        private void PlaceCubit()
+        private void PlaceCubit(CubitData cubitData)
         {
-            _placement.PlaceCubit(_selectedCubitData);
-            _playerInventory.SubtractMarbles(_selectedCubitData, 1);
+            _placement.PlaceCubit(cubitData);
+            _playerInventory.SubtractMarbles(cubitData, 1);
         }
 
         private void HandleCubeDestructionProgress()
@@ -232,6 +239,21 @@ namespace Malyglut.CubitWorld
                     
                 }
             }
+        }
+
+        [Button]
+        public void PlaceShape()
+        {
+            var raycastHit = RaycastPlane();
+
+            if (raycastHit.HasValue)
+            {
+                var hit = raycastHit.Value;
+
+                // _placement.UpdatePreview(hit.point);
+                // _placement.PlaceShape(hit.point, _shapeData);
+            }
+
         }
     }
 }

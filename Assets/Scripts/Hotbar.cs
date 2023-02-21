@@ -8,10 +8,10 @@ namespace Malyglut.CubitWorld
 {
     public class Hotbar : MonoBehaviour
     {
-        public event Action<HotbarSlot> OnSlotClick;
+        public event Action<InventorySlot> OnSlotClick;
         
         [SerializeField]
-        private HotbarSlot _slotPrefab;
+        private InventorySlot _slotPrefab;
 
         [SerializeField]
         private Transform _slotsParent;
@@ -28,8 +28,8 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private GameEvent _hotbarSelection;
 
-        private readonly List<HotbarSlot> _slots = new();
-        private Dictionary<HotbarSlot, CubitData> _slotsData = new();
+        private readonly List<InventorySlot> _slots = new();
+        private Dictionary<InventorySlot, IPlaceableData> _slotsData = new();
         private int _selectedSlotIdx;
         private bool _inventoryOpen;
 
@@ -58,7 +58,7 @@ namespace Malyglut.CubitWorld
             StartCoroutine(UpdateSelectionOnStart());
         }
 
-        private void HandleSlotClick(HotbarSlot slot)
+        private void HandleSlotClick(InventorySlot slot)
         {
             OnSlotClick.Invoke(slot);
         }
@@ -75,14 +75,23 @@ namespace Malyglut.CubitWorld
             
             if (marbleSlot != null)
             {
-                UpdateMarbleSlot(marbleSlot, cubitData, amount);
-                return;
+                UpdateMarbleSlot(marbleSlot, amount);
             }
-            
-            TryPlaceMarbleInEmptySlot(cubitData, amount);
+            else
+            {
+                TryPlaceMarbleInEmptySlot(cubitData, amount);
+            }
         }
 
-        private void UpdateMarbleSlot(HotbarSlot slot, CubitData cubitData, int amount)
+        public void AddShape(ShapeData shapeData)
+        {
+            var firstEmptySlot = _slotsData.First(slot => slot.Value == null).Key;
+
+            firstEmptySlot.Refresh(shapeData, 1);
+            _slotsData[firstEmptySlot] = shapeData;
+        }
+
+        private void UpdateMarbleSlot(InventorySlot slot, int amount)
         {
             if (amount > 0)
             {
@@ -111,7 +120,7 @@ namespace Malyglut.CubitWorld
             UpdateIfSelected(firstEmptySlot);
         }
 
-        private void UpdateIfSelected(HotbarSlot slot)
+        private void UpdateIfSelected(InventorySlot slot)
         {
             if (_slots[_selectedSlotIdx] == slot)
             {

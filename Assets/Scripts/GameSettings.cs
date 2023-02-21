@@ -17,6 +17,6 @@ namespace Malyglut.CubitWorld
 
         public int CubitsPerCubeAxis => _cubitsPerCubeAxis;
 
-        public float CubitLocalSize => 1f / _cubitsPerCubeAxis;
+        public float CubitCellSize => 1f / _cubitsPerCubeAxis;
     }
 }

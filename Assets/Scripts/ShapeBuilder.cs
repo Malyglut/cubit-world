@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Malyglut.CubitWorld
 {
@@ -37,12 +41,17 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private CubitPreview _placementPreview;
 
+        [SerializeField]
+        private ShapeCreator _shapeCreator;
+
         private float _cubitSize;
         private Quaternion _initialRotation;
         private CubitData _selectedCubit;
         private bool _rotationInProgress;
         private float _maxShapeExtents;
         private bool HasValidPlacementPosition => _placementPreview.gameObject.activeSelf;
+
+        private Dictionary<Vector3Int, Cubit> _shapeBlueprint = new();
 
         private void OnEnable()
         {
@@ -64,14 +73,14 @@ namespace Malyglut.CubitWorld
             if (isEven)
             {
                 var startingPosition = 1f / _gameSettings.CubitsPerCubeAxis;
-                var halfCubitSize = _gameSettings.CubitLocalSize * .5f;
+                var halfCubitSize = _gameSettings.CubitCellSize * .5f;
                 var cubitLayers = _gameSettings.CubitsPerCubeAxis / 2;
 
                 _maxShapeExtents = startingPosition + halfCubitSize * (cubitLayers - 1);
             }
             else
             {
-                var cubitSize = _gameSettings.CubitLocalSize;
+                var cubitSize = _gameSettings.CubitCellSize;
                 var cubitLayersFromCenter =(int)(_gameSettings.CubitsPerCubeAxis / 2f);
                 _maxShapeExtents = cubitSize * cubitLayersFromCenter;
             }
@@ -128,20 +137,29 @@ namespace Malyglut.CubitWorld
 
         private void PlaceCubit()
         {
-            var cubit = Instantiate(_cubitPrefab, _placementPreview.transform.position, _cubitsParent.rotation,
+            var cubitPosition = _placementPreview.transform.position;
+            var gridIdx = Utils.GridIndex(_cubitsParent.InverseTransformPoint(cubitPosition),
+                _gameSettings.CubitCellSize);
+            
+            var cubit = Instantiate(_cubitPrefab, cubitPosition, _cubitsParent.rotation,
                 _cubitsParent);
             cubit.transform.localScale = Vector3.one * _cubitSize;
 
             cubit.Initialize(_selectedCubit, null);
             cubit.PlayPlacementAnimation();
 
+            _shapeBlueprint.Add(gridIdx, cubit);
+
             _playerInventory.SubtractMarbles(_selectedCubit, 1);
         }
 
         private void DestroyCubit(Cubit cubit)
         {
+            var gridIdx = _shapeBlueprint.First(data => data.Value == cubit).Key;
+            
             Destroy(cubit.gameObject);
             _playerInventory.AddMarbles(cubit.Data, 1);
+            _shapeBlueprint.Remove(gridIdx);
         }
 
         private void UpdatePreview()
@@ -250,6 +268,14 @@ namespace Malyglut.CubitWorld
             {
                 _placementPreview.UpdateColor(_selectedCubit.Color);
             }
+        }
+
+        [Button]
+        private void BuildShape()
+        {
+            var shapeData = _shapeCreator.BuildShape(_shapeBlueprint);
+
+            _playerInventory.AddShape(shapeData);
         }
     }
 }

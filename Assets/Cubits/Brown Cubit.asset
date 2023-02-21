@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _name: Brown Cubit
   _color: {r: 0.4811321, g: 0.2819408, b: 0.19290674, a: 1}
+  _inventoryIcon: {fileID: 21300000, guid: f0926ccef95eb42419f007ef66b24791, type: 3}
