@@ -1,10 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Malyglut.CubitWorld
 {
     public class ShapeCreator : MonoBehaviour
     {
+        public event Action<ShapeData> OnShapeCreated;
+        
         [SerializeField]
         private Cubit _cubitPrefab;
 
@@ -14,9 +18,12 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private GameSettings _gameSettings;
 
+        [SerializeField]
+        private ScreenshotCamera _camera;
+
         private List<Cubit> _cubits = new();
 
-        public ShapeData BuildShape(Dictionary<Vector3Int, Cubit> shapeBlueprint)
+        public void BuildShape(Dictionary<Vector3Int, Cubit> shapeBlueprint)
         {
             foreach (var cubit in _cubits)
             {
@@ -37,20 +44,35 @@ namespace Malyglut.CubitWorld
                 _cube.Add(newCubit);
 
                 newCubit.transform.localPosition = localPosition;
-                
+                newCubit.transform.localRotation = Quaternion.identity;
+
                 _cubits.Add(newCubit);
             }
 
+            StartCoroutine(CreateShapeData(shapeBlueprint));
+        }
+
+        private IEnumerator CreateShapeData(Dictionary<Vector3Int, Cubit> shapeBlueprint)
+        {
+            yield return new WaitForEndOfFrame();
+            
+            var shapeIcon = _camera.TakeScreenshot();
+
+            yield return new WaitForEndOfFrame();
+            
             _cube.CombineMeshes();
 
             var shapeData = new ShapeData
             {
                 ShapeBlueprint = new Dictionary<Vector3Int, Cubit>(shapeBlueprint),
                 Mesh = _cube.Mesh,
-                Materials = _cube.Materials
+                Materials = _cube.Materials,
+                InventoryIcon = shapeIcon
             };
 
-            return shapeData;
+            OnShapeCreated.Invoke(shapeData);
+            
+            _cube.ResetState();
         }
     }
 }

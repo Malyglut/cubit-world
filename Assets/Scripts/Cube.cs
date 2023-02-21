@@ -92,14 +92,17 @@ namespace Malyglut.CubitWorld
         {
             var originalPosition = transform.position;
             var originalScale = transform.localScale;
+            var originalRotation = transform.rotation;
             
             transform.position = Vector3.zero;
             transform.localScale = Vector3.one;
+            transform.rotation = Quaternion.identity;
 
             CombineCubitMeshes();
 
             transform.position = originalPosition;
             transform.localScale = originalScale;
+            transform.rotation = originalRotation;
         }
 
         private void CombineCubitMeshes()
@@ -171,6 +174,8 @@ namespace Malyglut.CubitWorld
         {
             _cubits.Clear();
             _cubitsReward.Clear();
+            _meshFilter.sharedMesh = null;
+            _meshRenderer.materials = Array.Empty<Material>();
         }
     }
 }

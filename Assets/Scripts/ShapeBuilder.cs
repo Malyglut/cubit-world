@@ -84,6 +84,8 @@ namespace Malyglut.CubitWorld
             _resetButton.onClick.AddListener(ResetShape);
 
             _placementPreview.gameObject.SetActive(false);
+
+            _shapeCreator.OnShapeCreated += AddShapeToInventory;
         }
 
         private void ResetShape()
@@ -312,10 +314,15 @@ namespace Malyglut.CubitWorld
                 return;
             }
 
-            var shapeData = _shapeCreator.BuildShape(_shapeBlueprint);
-
-            _playerInventory.AddShape(shapeData);
+            _createShapeButton.interactable = false;
+            _resetButton.interactable = false;
             
+            _shapeCreator.BuildShape(_shapeBlueprint);
+        }
+
+        private void AddShapeToInventory(ShapeData shapeData)
+        {
+            _playerInventory.AddShape(shapeData);
             ResetState();
         }
 
