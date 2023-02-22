@@ -1,10 +1,9 @@
-﻿using System;
-using Cinemachine;
+﻿using Cinemachine;
 using Malyglut.CubitWorld.Data;
 using Malyglut.CubitWorld.ShapeCreation;
 using Malyglut.CubitWorld.Utilties;
+using Sirenix.OdinInspector;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Malyglut.CubitWorld.UserInterface.Inventory
 {
@@ -25,25 +24,25 @@ namespace Malyglut.CubitWorld.UserInterface.Inventory
         [SerializeField]
         private Hotbar _hotbar;
 
-        [SerializeField]
+        [SerializeField, FoldoutGroup("Events")]
         private GameEvent _marbleInventoryUpdate;
 
-        [SerializeField]
+        [SerializeField, FoldoutGroup("Events")]
         private GameEvent _shapeAddedToInventory;
 
-        [SerializeField]
+        [SerializeField, FoldoutGroup("Events")]
         private GameEvent _inventoryOpened;
 
-        [SerializeField]
+        [SerializeField, FoldoutGroup("Events")]
         private GameEvent _inventoryClosed;
 
-        [SerializeField]
+        [SerializeField, FoldoutGroup("Events")]
         private GameEvent _shapeRemovedFromInventory;
 
-        [SerializeField]
+        [SerializeField, FoldoutGroup("Events")]
         private GameEvent _slotClicked;
         
-        [FormerlySerializedAs("_slotDragEnd"),SerializeField]
+        [SerializeField, FoldoutGroup("Events")]
         private GameEvent _slotDragFinalized;
 
         private InventorySlot _selectedSlot;

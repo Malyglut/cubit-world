@@ -1,5 +1,6 @@
 ﻿using Malyglut.CubitWorld.Data;
 using Malyglut.CubitWorld.Utilties;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -11,25 +12,29 @@ namespace Malyglut.CubitWorld.UserInterface.Inventory
         private InventorySlotVisual _visual;
 
         [SerializeField]
-        private GameEvent _slotClicked;
-        
-        [SerializeField]
-        private GameEvent _slotDragBegin;
-        
-        [SerializeField]
-        private GameEvent _slotDragEnd;
-        
-        [SerializeField]
-        private GameEvent _slotPointerEnter;
+        private GameObject _selection;
 
         [SerializeField]
-        private GameObject _selection;
+        private GameObject _dragOverlay;
+
+        [SerializeField, FoldoutGroup("Events")]
+        private GameEvent _slotClicked;
+
+        [SerializeField, FoldoutGroup("Events")]
+        private GameEvent _slotDragBegin;
+
+        [SerializeField, FoldoutGroup("Events")]
+        private GameEvent _slotDragEnd;
+
+        [SerializeField, FoldoutGroup("Events")]
+        private GameEvent _slotPointerEnter;
 
         public IPlaceableData Data { get; private set; }
 
         private void Awake()
         {
             Deselect();
+            _dragOverlay.SetActive(false);
         }
 
         public void Refresh(IPlaceableData data, int count)
@@ -55,11 +60,13 @@ namespace Malyglut.CubitWorld.UserInterface.Inventory
 
         public void OnBeginDrag(PointerEventData eventData)
         {
+            _dragOverlay.SetActive(true);
             _slotDragBegin.Raise(this);
         }
 
         public void OnEndDrag(PointerEventData eventData)
         {
+            _dragOverlay.SetActive(false);
             _slotDragEnd.Raise(this);
         }
 
