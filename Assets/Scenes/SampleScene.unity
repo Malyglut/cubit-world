@@ -1653,6 +1653,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _virtualCamera: {fileID: 1962597763}
   _shapeBuilder: {fileID: 1764973208}
+  _grid: {fileID: 1078977618}
   _interface: {fileID: 1744248288}
   _slotPrefab: {fileID: -8559023425096588116, guid: 2541d7689fbefb04cb576817d9d87651, type: 3}
   _gridLayout: {fileID: 1078977614}
@@ -3280,6 +3281,7 @@ GameObject:
   - component: {fileID: 1078977615}
   - component: {fileID: 1078977614}
   - component: {fileID: 1078977617}
+  - component: {fileID: 1078977618}
   m_Layer: 5
   m_Name: Inventory Grid
   m_TagString: Untagged
@@ -3383,6 +3385,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_HorizontalFit: 2
   m_VerticalFit: 2
+--- !u!114 &1078977618
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1078977612}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9066e03df2a4f35ba0c7907b2be4b9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _slotPrefab: {fileID: -8559023425096588116, guid: 2541d7689fbefb04cb576817d9d87651, type: 3}
+  _gridLayout: {fileID: 1078977614}
+  _slotsParent: {fileID: 1078977613}
+  _gameSettings: {fileID: 11400000, guid: 9c8787dcb42ba4b4ca70d9199fa1d02f, type: 2}
 --- !u!1 &1083709475
 GameObject:
   m_ObjectHideFlags: 0

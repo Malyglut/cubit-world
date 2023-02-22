@@ -1,30 +1,21 @@
-﻿using System.Collections.Generic;
-using Cinemachine;
+﻿using Cinemachine;
 using UnityEngine;
-using UnityEngine.Serialization;
-using UnityEngine.UI;
 
 namespace Malyglut.CubitWorld
 {
     public class InventoryScreen : MonoBehaviour
     {
-        [FormerlySerializedAs("_camera"), SerializeField]
+        [SerializeField]
         private CinemachineVirtualCamera _virtualCamera;
 
-        [FormerlySerializedAs("_shapePreview"), SerializeField]
+        [SerializeField]
         private ShapeBuilder _shapeBuilder;
 
         [SerializeField]
+        private InventoryGrid _grid;
+
+        [SerializeField]
         private GameObject _interface;
-
-        [SerializeField]
-        private InventorySlot _slotPrefab;
-
-        [SerializeField]
-        private GridLayoutGroup _gridLayout;
-
-        [SerializeField]
-        private Transform _slotsParent;
 
         [SerializeField]
         private Hotbar _hotbar;
@@ -32,7 +23,7 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private GameEvent _marbleInventoryUpdate;
 
-        [FormerlySerializedAs("_shapeInventoryUpdate"), SerializeField]
+        [SerializeField]
         private GameEvent _shapeAddedToInventory;
 
         [SerializeField]
@@ -47,28 +38,12 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private GameEvent _slotClicked;
 
-        [SerializeField]
-        private GameSettings _gameSettings;
-
         private InventorySlot _selectedSlot;
         private bool _isShown;
-        private List<InventorySlot> _slots = new();
 
         private void Start()
         {
-            _gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-            var inventoryDimensions = _gameSettings.InventoryDimensions;
-            _gridLayout.constraintCount = inventoryDimensions.y;
-
-            var slotCount = inventoryDimensions.x * inventoryDimensions.y;
-
-            for (int i = 0; i < slotCount; i++)
-            {
-                var slot = Instantiate(_slotPrefab, _slotsParent);
-                slot.Refresh(null, 0);
-
-                _slots.Add(slot);
-            }
+            _grid.Initialize();
 
             _marbleInventoryUpdate.Subscribe(UpdateMarbles);
             _shapeAddedToInventory.Subscribe(AddShape);
