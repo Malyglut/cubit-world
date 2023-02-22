@@ -20,8 +20,12 @@ namespace Malyglut.CubitWorld
         private float _destructionTime = 5f;
 
         [SerializeField]
-        private List<Cubit> _cubits = new();
-
+        private GameEvent _cubeDestructionStarted;
+        
+        [SerializeField]
+        private GameEvent _cubeDestructionEnded;
+        
+        private readonly List<Cubit> _cubits = new();
         private readonly Dictionary<CubitData, int> _cubitsReward = new();
         private float _destructionStartTime;
         private bool _isBeingDestroyed;
@@ -29,6 +33,8 @@ namespace Malyglut.CubitWorld
         public IReadOnlyDictionary<CubitData, int> CubitsReward => _cubitsReward;
         public Mesh Mesh => _meshFilter.sharedMesh;
         public Material[] Materials => new List<Material>(_meshRenderer.materials).ToArray();
+
+        public float DestructionProgress => Mathf.Clamp01((Time.time - _destructionStartTime) / _destructionTime);
 
         private void Start()
         {
@@ -61,11 +67,13 @@ namespace Malyglut.CubitWorld
         {
             _destructionStartTime = Time.time;
             _isBeingDestroyed = true;
+            _cubeDestructionStarted.Raise(this);
         }
 
         public void StopDestruction()
         {
             _isBeingDestroyed = false;
+            _cubeDestructionEnded.Raise();
         }
 
         private void Update()
@@ -83,6 +91,7 @@ namespace Malyglut.CubitWorld
 
         private void DestroyCube()
         {
+            _cubeDestructionEnded.Raise();
             OnDestroy.Invoke(this);
             Destroy(gameObject);
         }
