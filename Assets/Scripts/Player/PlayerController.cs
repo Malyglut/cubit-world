@@ -1,5 +1,6 @@
 ﻿using Cinemachine;
 using Malyglut.CubitWorld.Data;
+using Malyglut.CubitWorld.UserInterface;
 using Malyglut.CubitWorld.Utilties;
 using Malyglut.CubitWorld.World;
 using Sirenix.OdinInspector;
@@ -39,6 +40,9 @@ namespace Malyglut.CubitWorld.Player
 
         [SerializeField, Range(1f, 25f)]
         private float _interactionRange = 5f;
+
+        [SerializeField]
+        private Reticle _reticle;
 
         [SerializeField, FoldoutGroup("Events")]
         private GameEvent _hotbarSelection;
@@ -130,9 +134,31 @@ namespace Malyglut.CubitWorld.Player
                 return;
             }
 
+            UpdateReticle();
             UpdatePreview();
             ProcessInput();
             HandleCubeDestructionProgress();
+        }
+
+        private void UpdateReticle()
+        {
+            _reticle.SetInactive();
+            
+            var raycastHit = RaycastCubits();
+
+            if (raycastHit.HasValue)
+            {
+                _reticle.SetActive();
+            }
+            else
+            {
+                raycastHit = RaycastPlane();
+
+                if (raycastHit.HasValue)
+                {
+                    _reticle.SetActive();
+                }
+            }
         }
 
         private void UpdatePreview()
