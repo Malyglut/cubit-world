@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Malyglut.CubitWorld.Data;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Malyglut.CubitWorld.World
 {
@@ -15,14 +16,12 @@ namespace Malyglut.CubitWorld.World
         private Cube _cubePrefab;
 
         [SerializeField]
-        private GameObject _plane;
-
-        [SerializeField]
         private Vector3Int _dimensions = Vector3Int.one;
 
         private readonly Dictionary<Vector3, Cube> _cubes = new();
+        private readonly List<Vector3Int> _cubeSpatialIndices = new();
 
-        public Cube this[Vector3 position]
+        private Cube this[Vector3 position]
         {
             get
             {
@@ -35,6 +34,7 @@ namespace Malyglut.CubitWorld.World
                 if (!_cubes.ContainsKey(position))
                 {
                     var newCube = Instantiate(_cubePrefab, position, Quaternion.identity, transform);
+                    newCube.Initialize(_gameSettings.CubitSize, _gameSettings.CubitCellSize);
                     AddCube(newCube);
                 }
 
@@ -46,16 +46,54 @@ namespace Malyglut.CubitWorld.World
         {
             var cubeSize = _gameSettings.CubeSize;
 
-            return position.x % cubeSize == 0 && Math.Abs(position.y % cubeSize - cubeSize*.5f) < .00025f && position.z % cubeSize == 0;
+            return position.x % cubeSize == 0 && Math.Abs(position.y % cubeSize - cubeSize * .5f) < .00025f &&
+                   position.z % cubeSize == 0;
         }
 
         private void Awake()
         {
-            var _initialCubes = GetComponentsInChildren<Cube>();
+            CalculateCubeSpatialIndices();
+            // GenerateRandomCubes();
+        }
 
-            foreach (var cube in _initialCubes)
+        [Button]
+        private void GenerateRandomCubes()
+        {
+            foreach (var (_, cube) in _cubes)
             {
-                AddCube(cube);
+                Destroy(cube.gameObject);
+            }
+            
+            _cubes.Clear();
+            
+            for (int x = 0; x < _dimensions.x; x++)
+            {
+                for (int y = 0; y < _dimensions.y; y++)
+                {
+                    for (int z = 0; z < _dimensions.z; z++)
+                    {
+                        var shapeBlueprint = GenerateRandomShapeBlueprint();
+                        var worldPosition = new Vector3(x, y, z) * _gameSettings.CubeSize;
+                        var cube = WorldPositionToCube(worldPosition);
+                        cube.Build(shapeBlueprint);
+                    }
+                }
+            }
+        }
+
+        private void CalculateCubeSpatialIndices()
+        {
+            var value = _gameSettings.CubitsPerCubeAxis % 2;
+
+            for (var x = -value; x <= value; x++)
+            {
+                for (var y = -value; y <= value; y++)
+                {
+                    for (var z = -value; z <= value; z++)
+                    {
+                        _cubeSpatialIndices.Add(new Vector3Int(x, y, z));
+                    }
+                }
             }
         }
 
@@ -104,14 +142,14 @@ namespace Malyglut.CubitWorld.World
         private Vector3 GridPosition(Vector3 position, float granularity)
         {
             position.y -= _gameSettings.CubeSize * .5f;
-            
+
             var x = Mathf.Round(position.x / granularity) * granularity;
-            var y = Mathf.Round(position.y  / granularity) * granularity;
+            var y = Mathf.Round(position.y / granularity) * granularity;
             var z = Mathf.Round(position.z / granularity) * granularity;
 
             var gridPosition = new Vector3(x, y, z);
             gridPosition.y += _gameSettings.CubeSize * .5f;
-            
+
             return gridPosition;
         }
 
@@ -125,13 +163,37 @@ namespace Malyglut.CubitWorld.World
             return _cubes.ContainsKey(cubePosition);
         }
 
+        private Dictionary<Vector3Int, CubitData> GenerateRandomShapeBlueprint()
+        {
+            var indicesCopy = new List<Vector3Int>(_cubeSpatialIndices);
+            var shapeBlueprint = new Dictionary<Vector3Int, CubitData>();
+
+            var maxCubits = (int)Mathf.Pow(_gameSettings.CubitsPerCubeAxis, 3);
+            var cubitCount = Random.Range(1, maxCubits + 1);
+
+            for (int i = 0; i < cubitCount; i++)
+            {
+                var idx = Random.Range(0, indicesCopy.Count);
+                var cubitData = _gameSettings.CubitDatabase.RandomCubitData(); 
+                shapeBlueprint.Add(indicesCopy[idx], cubitData);
+                indicesCopy.RemoveAt(idx);
+            }
+
+            return shapeBlueprint;
+        }
+
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.green;
 
-            var center = WorldPositionToCubePosition(transform.position);
+            var centerPosition = transform.position;
+            centerPosition.x += _dimensions.x * .5f * _gameSettings.CubeSize;
+            centerPosition.y += _dimensions.y * .5f * _gameSettings.CubeSize;
+            centerPosition.z += _dimensions.z * .5f * _gameSettings.CubeSize;
             
-            Gizmos.DrawWireCube(center,
+            // centerPosition = WorldPositionToCubePosition(centerPosition);
+
+            Gizmos.DrawWireCube(centerPosition,
                 new Vector3(_dimensions.x, _dimensions.y, _dimensions.z) * _gameSettings.CubeSize);
         }
     }

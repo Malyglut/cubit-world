@@ -99,5 +99,7 @@ MonoBehaviour:
   _meshFilter: {fileID: 7746220762585209155}
   _meshRenderer: {fileID: 781605094401213658}
   _destructionTime: 2
+  _cubitPrefab: {fileID: 3027699588758572586, guid: 57b82a2f501bd89459e321950a64f387, type: 3}
+  _gameSettings: {fileID: 0}
   _cubeDestructionStarted: {fileID: 11400000, guid: 76fa8519dfcc6c849b8ea35294f7a5cc, type: 2}
   _cubeDestructionEnded: {fileID: 11400000, guid: c8697be02f58d104aad271d779698da2, type: 2}

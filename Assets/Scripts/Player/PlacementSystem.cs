@@ -158,18 +158,20 @@ namespace Malyglut.CubitWorld.Player
             var shapePosition = _shapePreview.transform.position;
             var cube = _grid.WorldPositionToCube(shapePosition);
 
-            foreach (var (positionIdx, cubit) in shapeData.ShapeBlueprint)
-            {
-                var localPosition = (Vector3)positionIdx * _gameSettings.CubitCellSize;
-
-                var newCubit = Instantiate(_cubitPrefab);
-                newCubit.transform.localScale = Vector3.one * _gameSettings.CubitSize;
-
-                newCubit.Initialize(cubit.Data, cube);
-                cube.Add(newCubit);
-
-                newCubit.transform.localPosition = localPosition;
-            }
+            cube.Build(shapeData.ShapeBlueprint);
+            
+            // foreach (var (positionIdx, cubit) in shapeData.ShapeBlueprint)
+            // {
+            //     var localPosition = (Vector3)positionIdx * _gameSettings.CubitCellSize;
+            //
+            //     var newCubit = Instantiate(_cubitPrefab);
+            //     newCubit.transform.localScale = Vector3.one * _gameSettings.CubitSize;
+            //
+            //     newCubit.Initialize(cubit.Data, cube);
+            //     cube.Add(newCubit);
+            //
+            //     newCubit.transform.localPosition = localPosition;
+            // }
 
             cube.transform.rotation = _shapePreview.transform.rotation;
         }

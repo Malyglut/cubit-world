@@ -25,7 +25,7 @@ namespace Malyglut.CubitWorld.ShapeCreation
 
         private List<Cubit> _cubits = new();
 
-        public void BuildShape(Dictionary<Vector3Int, Cubit> shapeBlueprint)
+        public void BuildShape(Dictionary<Vector3Int, CubitData> shapeBlueprint)
         {
             foreach (var cubit in _cubits)
             {
@@ -35,14 +35,14 @@ namespace Malyglut.CubitWorld.ShapeCreation
             _cubits.Clear();
             _cube.ResetState();
             
-            foreach (var (positionIdx, cubit) in shapeBlueprint)
+            foreach (var (positionIdx, cubitData) in shapeBlueprint)
             {
                 var localPosition = (Vector3)positionIdx * _gameSettings.CubitCellSize; 
                 
                 var newCubit = Instantiate(_cubitPrefab);
                 newCubit.transform.localScale = Vector3.one * _gameSettings.CubitSize;
 
-                newCubit.Initialize(cubit.Data, _cube);
+                newCubit.Initialize(cubitData, _cube);
                 _cube.Add(newCubit);
 
                 newCubit.transform.localPosition = localPosition;
@@ -54,7 +54,7 @@ namespace Malyglut.CubitWorld.ShapeCreation
             StartCoroutine(CreateShapeData(shapeBlueprint));
         }
 
-        private IEnumerator CreateShapeData(Dictionary<Vector3Int, Cubit> shapeBlueprint)
+        private IEnumerator CreateShapeData(Dictionary<Vector3Int, CubitData> shapeBlueprint)
         {
             yield return new WaitForEndOfFrame();
             
@@ -66,7 +66,7 @@ namespace Malyglut.CubitWorld.ShapeCreation
 
             var shapeData = new ShapeData
             {
-                ShapeBlueprint = new Dictionary<Vector3Int, Cubit>(shapeBlueprint),
+                ShapeBlueprint = new Dictionary<Vector3Int, CubitData>(shapeBlueprint),
                 Mesh = _cube.Mesh,
                 Materials = _cube.Materials,
                 InventoryIcon = shapeIcon

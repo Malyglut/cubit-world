@@ -61,7 +61,7 @@ namespace Malyglut.CubitWorld.ShapeCreation
         private float _maxShapeExtents;
         private bool HasValidPlacementPosition => _placementPreview.gameObject.activeSelf;
 
-        private Dictionary<Vector3Int, Cubit> _shapeBlueprint = new();
+        private Dictionary<Vector3Int, Cubit> _shape = new();
 
         private void OnEnable()
         {
@@ -71,8 +71,8 @@ namespace Malyglut.CubitWorld.ShapeCreation
 
         private void UpdateButtons()
         {
-            _createShapeButton.interactable = _shapeBlueprint.Count >= MIN_CUBITS_REQUIRED;
-            _resetButton.interactable = _shapeBlueprint.Count > 0;
+            _createShapeButton.interactable = _shape.Count >= MIN_CUBITS_REQUIRED;
+            _resetButton.interactable = _shape.Count > 0;
         }
 
         private void Awake()
@@ -91,7 +91,7 @@ namespace Malyglut.CubitWorld.ShapeCreation
 
         private void ResetShape()
         {
-            foreach (var (_,cubit) in _shapeBlueprint)
+            foreach (var (_,cubit) in _shape)
             {
                 _playerInventory.AddMarbles(cubit.Data, 1);
             }
@@ -182,7 +182,7 @@ namespace Malyglut.CubitWorld.ShapeCreation
             cubit.Initialize(_selectedCubit, null);
             cubit.PlayPlacementAnimation();
 
-            _shapeBlueprint.Add(gridIdx, cubit);
+            _shape.Add(gridIdx, cubit);
 
             _playerInventory.SubtractMarbles(_selectedCubit, 1);
             
@@ -191,11 +191,11 @@ namespace Malyglut.CubitWorld.ShapeCreation
 
         private void DestroyCubit(Cubit cubit)
         {
-            var gridIdx = _shapeBlueprint.First(data => data.Value == cubit).Key;
+            var gridIdx = _shape.First(data => data.Value == cubit).Key;
 
             Destroy(cubit.gameObject);
             _playerInventory.AddMarbles(cubit.Data, 1);
-            _shapeBlueprint.Remove(gridIdx);
+            _shape.Remove(gridIdx);
             
             UpdateButtons();
         }
@@ -310,15 +310,17 @@ namespace Malyglut.CubitWorld.ShapeCreation
 
         private void BuildShape()
         {
-            if (_shapeBlueprint.Count < MIN_CUBITS_REQUIRED)
+            if (_shape.Count < MIN_CUBITS_REQUIRED)
             {
                 return;
             }
 
             _createShapeButton.interactable = false;
             _resetButton.interactable = false;
+
+            var shapeBlueprint = _shape.ToDictionary(shapeData => shapeData.Key, kvp => kvp.Value.Data);
             
-            _shapeCreator.BuildShape(_shapeBlueprint);
+            _shapeCreator.BuildShape(shapeBlueprint);
         }
 
         private void AddShapeToInventory(ShapeData shapeData)
@@ -329,12 +331,12 @@ namespace Malyglut.CubitWorld.ShapeCreation
 
         private void ResetState()
         {
-            foreach (var shapeIdx in _shapeBlueprint.Keys)
+            foreach (var shapeIdx in _shape.Keys)
             {
-                Destroy(_shapeBlueprint[shapeIdx].gameObject);
+                Destroy(_shape[shapeIdx].gameObject);
             }
 
-            _shapeBlueprint.Clear();
+            _shape.Clear();
         }
     }
 }

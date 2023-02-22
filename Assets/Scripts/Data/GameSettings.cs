@@ -17,6 +17,9 @@ namespace Malyglut.CubitWorld.Data
         [SerializeField]
         private Vector2Int _inventoryDimensions = Vector2Int.one;
 
+        [SerializeField]
+        private CubitDatabase _cubitDatabase;
+
         public float CubitSize => _cubitSize;
 
         public float CubeSize => _cubitSize * _cubitsPerCubeAxis;
@@ -28,5 +31,7 @@ namespace Malyglut.CubitWorld.Data
         public Vector2Int InventoryDimensions => _inventoryDimensions;
 
         public int InventoryCapacity => _hotbarSlotCount + _inventoryDimensions.x * _inventoryDimensions.y;
+
+        public CubitDatabase CubitDatabase => _cubitDatabase;
     }
 }

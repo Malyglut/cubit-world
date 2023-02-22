@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Malyglut.CubitWorld.Data;
 using Malyglut.CubitWorld.Utilties;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace Malyglut.CubitWorld.World
@@ -22,6 +21,9 @@ namespace Malyglut.CubitWorld.World
         private float _destructionTime = 5f;
 
         [SerializeField]
+        private Cubit _cubitPrefab;
+
+        [SerializeField]
         private GameEvent _cubeDestructionStarted;
         
         [SerializeField]
@@ -31,21 +33,19 @@ namespace Malyglut.CubitWorld.World
         private readonly Dictionary<CubitData, int> _cubitsReward = new();
         private float _destructionStartTime;
         private bool _isBeingDestroyed;
-        
+        private float _cubitLocalScale;
+        private float _cubitSize;
+
         public IReadOnlyDictionary<CubitData, int> CubitsReward => _cubitsReward;
         public Mesh Mesh => _meshFilter.sharedMesh;
         public Material[] Materials => new List<Material>(_meshRenderer.materials).ToArray();
 
         public float DestructionProgress => Mathf.Clamp01((Time.time - _destructionStartTime) / _destructionTime);
 
-        private void Start()
+        public void Initialize(float cubitSize, float cubitCellSize)
         {
-            var cubits = GetComponentsInChildren<Cubit>();
-
-            foreach (var cubit in cubits)
-            {
-                Add(cubit);
-            }
+            _cubitSize = cubitSize;
+            _cubitLocalScale = cubitCellSize;
         }
 
         public void Add(Cubit cubit)
@@ -98,7 +98,6 @@ namespace Malyglut.CubitWorld.World
             Destroy(gameObject);
         }
 
-        [Button]
         public void CombineMeshes()
         {
             var originalPosition = transform.position;
@@ -175,18 +174,34 @@ namespace Malyglut.CubitWorld.World
             _meshRenderer.materials = cubitMaterials.Values.ToArray();
         }
 
-        private void OnDrawGizmos()
-        {
-            Gizmos.color = Color.blue;
-            Gizmos.DrawWireCube(transform.position, transform.localScale);
-        }
-
         public void ResetState()
         {
             _cubits.Clear();
             _cubitsReward.Clear();
             _meshFilter.sharedMesh = null;
             _meshRenderer.materials = Array.Empty<Material>();
+        }
+
+        public void Build(Dictionary<Vector3Int, CubitData> shapeBluePrint)
+        {
+            foreach (var (positionIdx, cubitData) in shapeBluePrint)
+            {
+                var localPosition = (Vector3)positionIdx * _cubitLocalScale;
+
+                var newCubit = Instantiate(_cubitPrefab);
+                newCubit.transform.localScale = Vector3.one * _cubitSize;
+
+                newCubit.Initialize(cubitData, this);
+                Add(newCubit);
+
+                newCubit.transform.localPosition = localPosition;
+            }
+        }
+
+        private void OnDrawGizmos()
+        {
+            Gizmos.color = Color.blue;
+            Gizmos.DrawWireCube(transform.position, transform.localScale);
         }
     }
 }

@@ -6,14 +6,9 @@ namespace Malyglut.CubitWorld.World
 {
     public class Cubit : MonoBehaviour
     {
-        [SerializeField]
-        private CubitData _initializationData;
 
         [SerializeField]
         private CubitVisual _visual;
-        
-        [SerializeField]
-        private GameObject _collision;
 
         public CubitData Data { get; private set; }
         public Cube Cube { get; private set; }
@@ -21,16 +16,6 @@ namespace Malyglut.CubitWorld.World
         public Mesh Mesh => _visual.Mesh;
         public Material Material => _visual.Material;
 
-        private void Awake()
-        {
-            var cube = GetComponentInParent<Cube>();
-            
-            if (_initializationData != null && cube !=null)
-            {
-                Initialize(_initializationData, cube);
-            }
-        }
-        
         public void Initialize(CubitData data, Cube cube)
         {
             if (data == null)
@@ -65,6 +50,7 @@ namespace Malyglut.CubitWorld.World
             _visual.PlayPlacementAnimation();
         }
 
+        //triggered from animation
         public void FinishPlayingAnimation()
         {
             _visual.DisableAnimator();

@@ -9,11 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9321d1f4f8ad4ed8bc8bd60173ef6ea8, type: 3}
-  m_Name: Game Settings
+  m_Script: {fileID: 11500000, guid: 6f2bb4a4e192457eb747489584e5f7a9, type: 3}
+  m_Name: Orange Cubit
   m_EditorClassIdentifier: 
-  _cubitSize: 1
-  _cubitsPerCubeAxis: 3
-  _hotbarSlotCount: 9
-  _inventoryDimensions: {x: 4, y: 4}
-  _cubitDatabase: {fileID: 11400000, guid: a33fac1729d105045af39c119b09096c, type: 2}
+  _name: Orange Cubit
+  _color: {r: 0.9433962, g: 0.51264215, b: 0.048949808, a: 1}
+  _inventoryIcon: {fileID: 21300000, guid: f0926ccef95eb42419f007ef66b24791, type: 3}
