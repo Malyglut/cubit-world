@@ -24,6 +24,9 @@ namespace Malyglut.CubitWorld.Player
         [SerializeField]
         private GameObject _targetCubePreview;
 
+        [SerializeField]
+        private GameObject _previews;
+
         public bool HasValidPlacementPosition => _cubitPreview.gameObject.activeSelf || _shapePreview.gameObject.activeSelf;
 
         private void Awake()
@@ -159,21 +162,18 @@ namespace Malyglut.CubitWorld.Player
             var cube = _grid.WorldPositionToCube(shapePosition);
 
             cube.Build(shapeData.ShapeBlueprint);
-            
-            // foreach (var (positionIdx, cubit) in shapeData.ShapeBlueprint)
-            // {
-            //     var localPosition = (Vector3)positionIdx * _gameSettings.CubitCellSize;
-            //
-            //     var newCubit = Instantiate(_cubitPrefab);
-            //     newCubit.transform.localScale = Vector3.one * _gameSettings.CubitSize;
-            //
-            //     newCubit.Initialize(cubit.Data, cube);
-            //     cube.Add(newCubit);
-            //
-            //     newCubit.transform.localPosition = localPosition;
-            // }
 
             cube.transform.rotation = _shapePreview.transform.rotation;
+        }
+
+        public void DisablePreview()
+        {
+            _previews.SetActive(false);
+        }
+
+        public void EnablePreview()
+        {
+            _previews.SetActive(true);
         }
     }
 }

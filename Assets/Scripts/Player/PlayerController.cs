@@ -275,6 +275,8 @@ namespace Malyglut.CubitWorld.Player
             _targetCube.StopDestruction();
 
             _targetCube = null;
+            
+            _placement.EnablePreview();
         }
 
         private void HandleCubeDestroyed(Cube cube)
@@ -290,6 +292,8 @@ namespace Malyglut.CubitWorld.Player
 
             _targetCube.OnDestroy -= HandleCubeDestroyed;
             _targetCube = null;
+            
+            _placement.EnablePreview();
         }
 
         private RaycastHit? RaycastCubits()
@@ -312,6 +316,8 @@ namespace Malyglut.CubitWorld.Player
 
             _targetCube.OnDestroy += HandleCubeDestroyed;
             _targetCube.StartDestruction();
+            
+            _placement.DisablePreview();
         }
 
         private void OnDrawGizmos()
