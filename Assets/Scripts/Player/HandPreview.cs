@@ -1,4 +1,5 @@
-﻿using Malyglut.CubitWorld.Data;
+﻿using System;
+using Malyglut.CubitWorld.Data;
 using Malyglut.CubitWorld.Utilties;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -30,6 +31,13 @@ namespace Malyglut.CubitWorld.Player
             _hotbarSelection.Subscribe(UpdatePreview);
             _inventoryOpened.Subscribe(HidePreview);
             _inventoryClosed.Subscribe(ShowPreview);
+        }
+
+        private void OnDestroy()
+        {
+            _hotbarSelection.Unsubscribe(UpdatePreview);
+            _inventoryOpened.Unsubscribe(HidePreview);
+            _inventoryClosed.Unsubscribe(ShowPreview);
         }
 
         private void ShowPreview()

@@ -1,4 +1,5 @@
-﻿using Cinemachine;
+﻿using System;
+using Cinemachine;
 using Malyglut.CubitWorld.Data;
 using Malyglut.CubitWorld.ShapeCreation;
 using Malyglut.CubitWorld.Utilties;
@@ -60,6 +61,15 @@ namespace Malyglut.CubitWorld.UserInterface.Inventory
             _slotDragFinalized.Subscribe(RefreshSelectedSlot);
 
             Close();
+        }
+
+        private void OnDestroy()
+        {
+            _marbleInventoryUpdate.Unsubscribe(UpdateMarbles);
+            _shapeAddedToInventory.Unsubscribe(AddShape);
+            _shapeRemovedFromInventory.Unsubscribe(RemoveShape);
+            _slotClicked.Unsubscribe(HandleSlotClick);
+            _slotDragFinalized.Unsubscribe(RefreshSelectedSlot);
         }
 
         private void RefreshSelectedSlot()

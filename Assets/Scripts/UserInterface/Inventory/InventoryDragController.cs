@@ -1,4 +1,5 @@
-﻿using Malyglut.CubitWorld.Data;
+﻿using System;
+using Malyglut.CubitWorld.Data;
 using Malyglut.CubitWorld.Player;
 using Malyglut.CubitWorld.Utilties;
 using UnityEngine;
@@ -39,6 +40,13 @@ namespace Malyglut.CubitWorld.UserInterface.Inventory
             _slotPointerEnter.Subscribe(UpdateTarget);
             
             _draggedObject.gameObject.SetActive(false);
+        }
+
+        private void OnDestroy()
+        {
+            _slotDragBegin.Unsubscribe(StartDragging);
+            _slotDragEnd.Unsubscribe(StopDragging);
+            _slotPointerEnter.Unsubscribe(UpdateTarget);
         }
 
         private void Update()

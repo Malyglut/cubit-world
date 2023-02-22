@@ -29,6 +29,12 @@ namespace Malyglut.CubitWorld.UserInterface
             _cubeDestructionEnded.Subscribe(HideProgressBar);
         }
 
+        private void OnDestroy()
+        {
+            _cubeDestructionStarted.Unsubscribe(ShowProgressBar);
+            _cubeDestructionEnded.Unsubscribe(HideProgressBar);
+        }
+
         private void ShowProgressBar(object cubeObject)
         {
             _targetCube = (Cube)cubeObject;

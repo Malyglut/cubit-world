@@ -1,6 +1,8 @@
-﻿using Malyglut.CubitWorld.Data;
+﻿using Cinemachine;
+using Malyglut.CubitWorld.Data;
 using Malyglut.CubitWorld.Utilties;
 using Malyglut.CubitWorld.World;
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -8,6 +10,9 @@ namespace Malyglut.CubitWorld.Player
 {
     public class PlayerController : MonoBehaviour
     {
+        [FormerlySerializedAs("_dynamicCamera"),SerializeField]
+        private CinemachineVirtualCamera _virtualCamera;
+        
         [SerializeField]
         private LayerMask _cubitsLayer;
 
@@ -20,16 +25,11 @@ namespace Malyglut.CubitWorld.Player
         [SerializeField]
         private float _moveSpeed = 2f;
 
-        private IPlaceableData _selectedPlaceableData;
-
         [SerializeField]
         private PlacementSystem _placement;
 
-        [FormerlySerializedAs("_playerInventory"), SerializeField]
-        private PlayerInventory _inventory;
-
         [SerializeField]
-        private GameEvent _hotbarSelection;
+        private PlayerInventory _inventory;
 
         [SerializeField]
         private GameSettings _gameSettings;
@@ -40,24 +40,51 @@ namespace Malyglut.CubitWorld.Player
         [SerializeField, Range(1f, 25f)]
         private float _interactionRange = 5f;
 
-        [SerializeField]
+        [SerializeField, FoldoutGroup("Events")]
+        private GameEvent _hotbarSelection;
+
+        [SerializeField, FoldoutGroup("Events")]
         private GameEvent _inventoryOpened;
 
-        [SerializeField]
+        [SerializeField, FoldoutGroup("Events")]
         private GameEvent _inventoryClosed;
+
+        [SerializeField, FoldoutGroup("Events")]
+        private GameEvent _pauseScreenOpened;
+
+        [SerializeField, FoldoutGroup("Events")]
+        private GameEvent _pauseScreenClosed;
 
         private bool _destroyingCube;
         private Cube _targetCube;
-
+        private IPlaceableData _selectedPlaceableData;
         private bool _isSuspended;
+        private float _cameraVerticalSpeed;
+        private float _cameraHorizontalSpeed;
+        private CinemachinePOV _cameraPov;
 
         private void Awake()
         {
+            _cameraPov = _virtualCamera.GetCinemachineComponent<CinemachinePOV>();
+            _cameraVerticalSpeed = _cameraPov.m_VerticalAxis.m_MaxSpeed; 
+            _cameraHorizontalSpeed = _cameraPov.m_HorizontalAxis.m_MaxSpeed; 
+            
             Unsuspend();
 
             _hotbarSelection.Subscribe(UpdateSelectedPlaceable);
             _inventoryOpened.Subscribe(Suspend);
             _inventoryClosed.Subscribe(Unsuspend);
+            _pauseScreenOpened.Subscribe(Suspend);
+            _pauseScreenClosed.Subscribe(Unsuspend);
+        }
+
+        private void OnDestroy()
+        {
+            _hotbarSelection.Unsubscribe(UpdateSelectedPlaceable);
+            _inventoryOpened.Unsubscribe(Suspend);
+            _inventoryClosed.Unsubscribe(Unsuspend);
+            _pauseScreenOpened.Unsubscribe(Suspend);
+            _pauseScreenClosed.Unsubscribe(Unsuspend);
         }
 
         private void Suspend()
@@ -68,6 +95,10 @@ namespace Malyglut.CubitWorld.Player
             Cursor.lockState = CursorLockMode.None;
 
             _placement.HidePreview();
+            
+            //best i could come up with to disable camera rotation when pause screen is visible, its too late
+            _cameraPov.m_VerticalAxis.m_MaxSpeed = 0f;
+            _cameraPov.m_HorizontalAxis.m_MaxSpeed = 0f;
 
             if (_targetCube != null)
             {
@@ -81,6 +112,9 @@ namespace Malyglut.CubitWorld.Player
 
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
+            
+            _cameraPov.m_VerticalAxis.m_MaxSpeed = _cameraVerticalSpeed;
+            _cameraPov.m_HorizontalAxis.m_MaxSpeed = _cameraHorizontalSpeed;
         }
 
         private void UpdateSelectedPlaceable(object placeableDataObject)
