@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Cubit Database
   m_EditorClassIdentifier: 
   _records:
+  - {fileID: 11400000, guid: 64278f40288a3034595b44e1c9cc2ebb, type: 2}
   - {fileID: 11400000, guid: 3cebb53c8870cae49abdaccfb2b22e73, type: 2}
   - {fileID: 11400000, guid: 320f60a2d6c34ad49bd8c827e48607b1, type: 2}
   - {fileID: 11400000, guid: b6ac03c795ace484fabf9a85205cfe27, type: 2}

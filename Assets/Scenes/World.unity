@@ -2188,6 +2188,7 @@ MonoBehaviour:
   _gameSettings: {fileID: 11400000, guid: 9c8787dcb42ba4b4ca70d9199fa1d02f, type: 2}
   _cubePrefab: {fileID: 8463052338774945071, guid: d874179112764cf40a6bd5119f8adf97, type: 3}
   _dimensions: {x: 4, y: 1, z: 3}
+  _loadingFinished: {fileID: 11400000, guid: 7f13555653703ff45860ac949160fce7, type: 2}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0

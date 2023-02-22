@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Malyglut.CubitWorld.Data;
+using Malyglut.CubitWorld.Utilties;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -17,6 +18,9 @@ namespace Malyglut.CubitWorld.World
 
         [SerializeField]
         private Vector3Int _dimensions = Vector3Int.one;
+        
+        [SerializeField]
+        private GameEvent _loadingFinished;
 
         private readonly Dictionary<Vector3, Cube> _cubes = new();
         private readonly List<Vector3Int> _cubeSpatialIndices = new();
@@ -53,7 +57,10 @@ namespace Malyglut.CubitWorld.World
         private void Awake()
         {
             CalculateCubeSpatialIndices();
-            // GenerateRandomCubes();
+            GenerateRandomCubes();
+            CombineCubeMeshes();
+            
+            _loadingFinished.Raise();
         }
 
         [Button]
@@ -66,11 +73,11 @@ namespace Malyglut.CubitWorld.World
             
             _cubes.Clear();
             
-            for (int x = 0; x < _dimensions.x; x++)
+            for (var x = 0; x < _dimensions.x; x++)
             {
-                for (int y = 0; y < _dimensions.y; y++)
+                for (var y = 0; y < _dimensions.y; y++)
                 {
-                    for (int z = 0; z < _dimensions.z; z++)
+                    for (var z = 0; z < _dimensions.z; z++)
                     {
                         var shapeBlueprint = GenerateRandomShapeBlueprint();
                         var worldPosition = new Vector3(x, y, z) * _gameSettings.CubeSize;
@@ -117,8 +124,7 @@ namespace Malyglut.CubitWorld.World
             _cubes.Remove(cube.transform.position);
             cube.OnDestroy -= HandleCubeDestroyed;
         }
-
-        [Button]
+        
         private void CombineCubeMeshes()
         {
             foreach (var cube in _cubes.Values)
@@ -171,7 +177,7 @@ namespace Malyglut.CubitWorld.World
             var maxCubits = (int)Mathf.Pow(_gameSettings.CubitsPerCubeAxis, 3);
             var cubitCount = Random.Range(1, maxCubits + 1);
 
-            for (int i = 0; i < cubitCount; i++)
+            for (var i = 0; i < cubitCount; i++)
             {
                 var idx = Random.Range(0, indicesCopy.Count);
                 var cubitData = _gameSettings.CubitDatabase.RandomCubitData(); 
