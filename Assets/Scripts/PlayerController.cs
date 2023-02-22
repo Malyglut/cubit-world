@@ -216,7 +216,17 @@ namespace Malyglut.CubitWorld
 
             var raycastHit = RaycastCubits();
 
-            if (!raycastHit.HasValue)
+            if (raycastHit.HasValue)
+            {
+                var hit = raycastHit.Value;
+                var cube = hit.transform.GetComponentInParent<Cubit>().Cube;
+                
+                if(cube!=null && cube != _targetCube)
+                {
+                    StopDestroyingCube();
+                }
+            }
+            else
             {
                 StopDestroyingCube();
             }
