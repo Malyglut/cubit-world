@@ -76,11 +76,12 @@ namespace Malyglut.CubitWorld
             }
         }
 
-        public void UpdatePreviewPosition(IPlaceableData selectedPlaceableData, Vector3 playerPosition, Vector3 targetPosition)
+        public void UpdatePreviewPosition(IPlaceableData selectedPlaceableData, Vector3 playerPosition,
+            Vector3 targetPosition, Vector3 placementDirection)
         {
             if (selectedPlaceableData is CubitData)
             {
-                UpdateCubitPreview(_grid.WorldPositionToCubitPosition(targetPosition));
+                UpdateCubitPreview(_grid.WorldPositionToCubitPosition(targetPosition+placementDirection*_gameSettings.CubitSize*.5f));
             }
 
             if (selectedPlaceableData is ShapeData)
@@ -137,6 +138,7 @@ namespace Malyglut.CubitWorld
         {
             _cubitPreview.gameObject.SetActive(placeableData is CubitData);
             _shapePreview.gameObject.SetActive(placeableData is ShapeData);
+            _targetCubePreview.SetActive(placeableData != null);
 
             if (placeableData is CubitData cubitData)
             {

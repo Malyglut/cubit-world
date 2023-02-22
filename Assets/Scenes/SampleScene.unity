@@ -4080,7 +4080,7 @@ MonoBehaviour:
   _cubitPrefab: {fileID: 3027699588758572586, guid: 57b82a2f501bd89459e321950a64f387, type: 3}
   _cubitPreview: {fileID: 9094798234188050183}
   _shapePreview: {fileID: 72607947}
-  _targetCubePreview: {fileID: 0}
+  _targetCubePreview: {fileID: 6474127747972584701}
 --- !u!1 &1440623343
 GameObject:
   m_ObjectHideFlags: 0

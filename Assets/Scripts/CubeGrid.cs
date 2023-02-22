@@ -95,30 +95,23 @@ namespace Malyglut.CubitWorld
 
         public Vector3 WorldPositionToCubitPosition(Vector3 position)
         {
-            position.y -= _gameSettings.CubitSize;
+            //offset the cubit position so that cubit at the bottom of the cube has an index of -1 
+            // position.y -= _gameSettings.CubitSize;
             return GridPosition(position, _gameSettings.CubitSize);
         }
 
         private Vector3 GridPosition(Vector3 position, float granularity)
         {
+            position.y -= _gameSettings.CubeSize * .5f;
+            
             var x = Mathf.Round(position.x / granularity) * granularity;
-            var y = Mathf.Round(position.y / granularity) * granularity;
+            var y = Mathf.Round(position.y  / granularity) * granularity;
             var z = Mathf.Round(position.z / granularity) * granularity;
 
             var gridPosition = new Vector3(x, y, z);
             gridPosition.y += _gameSettings.CubeSize * .5f;
             
             return gridPosition;
-        }
-
-        private void OnDrawGizmos()
-        {
-            Gizmos.color = Color.green;
-
-            var center = WorldPositionToCubePosition(transform.position);
-            
-            Gizmos.DrawWireCube(center,
-                new Vector3(_dimensions.x, _dimensions.y, _dimensions.z) * _gameSettings.CubeSize);
         }
 
         public Cube WorldPositionToCube(Vector3 worldPosition)
@@ -129,6 +122,16 @@ namespace Malyglut.CubitWorld
         public bool CubeExists(Vector3 cubePosition)
         {
             return _cubes.ContainsKey(cubePosition);
+        }
+
+        private void OnDrawGizmos()
+        {
+            Gizmos.color = Color.green;
+
+            var center = WorldPositionToCubePosition(transform.position);
+            
+            Gizmos.DrawWireCube(center,
+                new Vector3(_dimensions.x, _dimensions.y, _dimensions.z) * _gameSettings.CubeSize);
         }
     }
 }

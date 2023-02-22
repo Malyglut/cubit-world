@@ -121,7 +121,7 @@ namespace Malyglut.CubitWorld
                     {
                         var hit = raycastHit.Value;
 
-                        _placement.UpdatePreviewPosition(_selectedPlaceableData, transform.position, hit.point);
+                        _placement.UpdatePreviewPosition(_selectedPlaceableData, transform.position, hit.point, hit.normal);
                     }
                     else
                     {
@@ -295,6 +295,7 @@ namespace Malyglut.CubitWorld
 
                 Gizmos.color = Color.yellow;
                 Gizmos.DrawLine(hit.point, hit.point + hit.normal * normalRayLength);
+                DrawCubeAndCubit(hit.point);
             }
             else
             {
@@ -306,15 +307,20 @@ namespace Malyglut.CubitWorld
                     Gizmos.color = Color.red;
                     Gizmos.DrawSphere(hit.point, .2f);
 
-                    var cubePosition = _grid.WorldPositionToCubePosition(hit.point);
-                    var cubitPosition = _grid.WorldPositionToCubitPosition(hit.point);
-
                     Gizmos.color = Color.yellow;
-                    Gizmos.DrawSphere(cubePosition, .2f);
-                    Gizmos.DrawWireCube(cubePosition, Vector3.one * _gameSettings.CubeSize);
-                    Gizmos.DrawWireCube(cubitPosition, Vector3.one * _gameSettings.CubitSize);
+                    DrawCubeAndCubit(hit.point);
                 }
             }
+        }
+
+        private void DrawCubeAndCubit(Vector3 rayHitPosition)
+        {
+            var cubePosition = _grid.WorldPositionToCubePosition(rayHitPosition);
+            var cubitPosition = _grid.WorldPositionToCubitPosition(rayHitPosition);
+
+            Gizmos.DrawSphere(cubePosition, .2f);
+            Gizmos.DrawWireCube(cubePosition, Vector3.one * _gameSettings.CubeSize);
+            Gizmos.DrawWireCube(cubitPosition, Vector3.one * _gameSettings.CubitSize);
         }
     }
 }
