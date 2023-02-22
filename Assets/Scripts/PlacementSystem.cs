@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Malyglut.CubitWorld
 {
@@ -19,6 +18,9 @@ namespace Malyglut.CubitWorld
 
         [SerializeField]
         private ShapePreview _shapePreview;
+
+        [SerializeField]
+        private GameObject _targetCubePreview;
 
         public bool HasValidPlacementPosition => _cubitPreview.gameObject.activeSelf || _shapePreview.gameObject.activeSelf;
 
@@ -48,6 +50,7 @@ namespace Malyglut.CubitWorld
         {
             _cubitPreview.gameObject.SetActive(false);
             _shapePreview.gameObject.SetActive(false);
+            _targetCubePreview.SetActive(false);
         }
 
         public void UpdatePreviewPosition(IPlaceableData selectedPlaceableData, Vector3 playerPosition, Cubit targetCubit,
@@ -87,6 +90,7 @@ namespace Malyglut.CubitWorld
                 if (_grid.CubeExists(cubePosition))
                 {
                     _shapePreview.gameObject.SetActive(false);
+                    _targetCubePreview.SetActive(false);
                 }
                 else
                 {
@@ -99,6 +103,8 @@ namespace Malyglut.CubitWorld
         {
             _cubitPreview.gameObject.SetActive(true);
             _cubitPreview.transform.position = position;
+
+           UpdateTargetCubePreview(_grid.WorldPositionToCubePosition(position));
         }
 
         private void UpdateShapePreview(Vector3 playerPosition, Vector3 position)
@@ -117,6 +123,14 @@ namespace Malyglut.CubitWorld
             _shapePreview.gameObject.SetActive(true);
             _shapePreview.transform.position = position;
             _shapePreview.transform.rotation = targetRotation;
+
+            UpdateTargetCubePreview(position);
+        }
+
+        private void UpdateTargetCubePreview(Vector3 position)
+        {
+            _targetCubePreview.gameObject.SetActive(true);
+            _targetCubePreview.transform.position = position;
         }
 
         public void UpdatePreviewVisual(IPlaceableData placeableData)
