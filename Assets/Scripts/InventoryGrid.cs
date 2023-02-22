@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace Malyglut.CubitWorld
 {
-    public class InventoryGrid : MonoBehaviour
+    public class InventoryGrid : InventorySlotCollection
     {
         [SerializeField]
         private InventorySlot _slotPrefab;
@@ -16,7 +16,7 @@ namespace Malyglut.CubitWorld
         
         [SerializeField]
         private GameSettings _gameSettings;
-        
+
         public void Initialize()
         {
             _gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
@@ -29,8 +29,19 @@ namespace Malyglut.CubitWorld
             {
                 var slot = Instantiate(_slotPrefab, _slotsParent);
                 slot.Refresh(null, 0);
+
+                _slots.Add(slot);
             }
         }
 
+        protected override void UpdateIfSelected(InventorySlot slot)
+        {
+            //do nothing
+        }
+
+        protected override void ClearSlot(InventorySlot slot)
+        {
+            //do nothing
+        }
     }
 }

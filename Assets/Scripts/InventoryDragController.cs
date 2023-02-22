@@ -21,6 +21,9 @@ namespace Malyglut.CubitWorld
 
         [SerializeField]
         private GameEvent _slotPointerEnter;
+        
+        [SerializeField]
+        private GameEvent _slotDragFinalized;
 
         private bool _isDragging;
         private InventorySlot _source;
@@ -82,6 +85,8 @@ namespace Malyglut.CubitWorld
 
             _source.Refresh(targetData, GetMarbleCount(targetData));
             _target.Refresh(sourceData, GetMarbleCount(sourceData));
+
+            _slotDragFinalized.Raise();
         }
 
         private void StartDragging(object slotObject)
@@ -96,7 +101,7 @@ namespace Malyglut.CubitWorld
 
         private int GetMarbleCount(IPlaceableData placeableData)
         {
-            return placeableData is CubitData cubitData ? _inventory.MarbleCount(cubitData) : 0;
+            return placeableData is CubitData cubitData ? _inventory.MarbleCount(cubitData) : 1;
         }
     }
 }

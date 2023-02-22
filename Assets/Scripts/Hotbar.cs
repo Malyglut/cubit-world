@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using System.Linq;
 using UnityEngine;
 
 namespace Malyglut.CubitWorld
 {
-    public class Hotbar : MonoBehaviour
+    public class Hotbar : InventorySlotCollection
     {
         [SerializeField]
         private InventorySlot _slotPrefab;
@@ -20,18 +18,10 @@ namespace Malyglut.CubitWorld
         [SerializeField]
         private GameSettings _gameSettings;
 
-        private readonly List<InventorySlot> _slots = new();
         private int _selectedSlotIdx = -1;
         private bool _inventoryOpen;
 
-        public bool HasEmptySlots => _slots.Any(slot => slot.Data == null);
-
-        public bool HasMarble(CubitData cubitData)
-        {
-            return _slots.Any(slot => slot.Data is CubitData slotCubit && slotCubit == cubitData);
-        }
-
-        private void Awake()
+        public void Initialize()
         {
             for (var i = 0; i < _gameSettings.HotbarSlotCount; i++)
             {
@@ -50,61 +40,13 @@ namespace Malyglut.CubitWorld
             SelectSlot(0);
         }
 
-        public void RefreshMarbles(CubitData cubitData, int amount)
-        {
-            var marbleSlot = _slots
-                .FirstOrDefault(slot => slot.Data == cubitData);
-
-            if (marbleSlot != null)
-            {
-                UpdateMarbleSlot(marbleSlot, amount);
-            }
-            else
-            {
-                TryPlaceMarbleInEmptySlot(cubitData, amount);
-            }
-        }
-
-        public void AddShape(ShapeData shapeData)
-        {
-            var firstEmptySlot = _slots.First(slot => slot.Data == null);
-
-            firstEmptySlot.Refresh(shapeData, 1);
-        }
-
-        private void UpdateMarbleSlot(InventorySlot slot, int amount)
-        {
-            if (amount > 0)
-            {
-                slot.RefreshCount(amount);
-            }
-            else
-            {
-                ClearSlot(slot);
-            }
-        }
-
-        private void ClearSlot(InventorySlot slot)
+        protected override void ClearSlot(InventorySlot slot)
         {
             slot.Refresh(null, 0);
             UpdateIfSelected(slot);
         }
 
-        private void TryPlaceMarbleInEmptySlot(CubitData cubitData, int amount)
-        {
-            if (!HasEmptySlots)
-            {
-                return;
-            }
-
-            var firstEmptySlot = _slots.First(slot => slot.Data == null);
-
-            firstEmptySlot.Refresh(cubitData, amount);
-
-            UpdateIfSelected(firstEmptySlot);
-        }
-
-        private void UpdateIfSelected(InventorySlot slot)
+        protected override void UpdateIfSelected(InventorySlot slot)
         {
             if (_slots[_selectedSlotIdx] == slot)
             {

@@ -17,8 +17,7 @@ namespace Malyglut.CubitWorld
 
         public void Refresh(IPlaceableData data, int count)
         {
-            
-            _contentsObject.SetActive(data != null && count>0);
+            _contentsObject.SetActive(data != null);
             
             if (data == null)
             {

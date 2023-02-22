@@ -1,5 +1,6 @@
 ﻿using Cinemachine;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Malyglut.CubitWorld
 {
@@ -37,6 +38,9 @@ namespace Malyglut.CubitWorld
 
         [SerializeField]
         private GameEvent _slotClicked;
+        
+        [FormerlySerializedAs("_slotDragEnd"),SerializeField]
+        private GameEvent _slotDragFinalized;
 
         private InventorySlot _selectedSlot;
         private bool _isShown;
@@ -44,20 +48,33 @@ namespace Malyglut.CubitWorld
         private void Start()
         {
             _grid.Initialize();
+            _hotbar.Initialize();
 
             _marbleInventoryUpdate.Subscribe(UpdateMarbles);
             _shapeAddedToInventory.Subscribe(AddShape);
             _shapeRemovedFromInventory.Subscribe(RemoveShape);
             _slotClicked.Subscribe(HandleSlotClick);
-
+            _slotDragFinalized.Subscribe(RefreshSelectedSlot);
 
             Close();
+        }
+
+        private void RefreshSelectedSlot()
+        {
+            if (_selectedSlot != null && (_selectedSlot.Data == null || _selectedSlot.Data is ShapeData))
+            {
+                _selectedSlot.Deselect();
+                _selectedSlot = null;
+            }
+            
+            UpdateSelectedSlot(_selectedSlot);
         }
 
         private void RemoveShape(object shapeDataObject)
         {
             var shapeData = (ShapeData)shapeDataObject;
 
+            //can only be placed from hotbar so remove from hotbar
             if (_hotbar.HasShape(shapeData))
             {
                 _hotbar.RemoveShape(shapeData);
@@ -68,9 +85,14 @@ namespace Malyglut.CubitWorld
         {
             var shapeData = (ShapeData)shapeDataObject;
 
+            //prioritize adding to hotbar
             if (_hotbar.HasEmptySlots)
             {
                 _hotbar.AddShape(shapeData);
+            }
+            else
+            {
+                _grid.AddShape(shapeData);
             }
         }
 
@@ -85,12 +107,25 @@ namespace Malyglut.CubitWorld
 
             if (_selectedSlot!= null && _selectedSlot.Data == marbleCount.Data && marbleCount.Count <= 0)
             {
+                _selectedSlot.Deselect();
+                _selectedSlot = null;
                 UpdateSelectedSlot(null);
             }
 
-            if (_hotbar.HasEmptySlots || _hotbar.HasMarble(marbleCount.Data))
+            //check inventory first
+            if (_grid.HasMarble(marbleCount.Data))
+            {
+                _grid.RefreshMarbles(marbleCount.Data, marbleCount.Count);
+            }
+            //prioritize adding to hotbar
+            else if (_hotbar.HasEmptySlots || _hotbar.HasMarble(marbleCount.Data))
             {
                 _hotbar.RefreshMarbles(marbleCount.Data, marbleCount.Count);
+            }
+            //if hotbar is full, add to inventory
+            else
+            {
+                _grid.RefreshMarbles(marbleCount.Data, marbleCount.Count);
             }
         }
 
@@ -103,28 +138,29 @@ namespace Malyglut.CubitWorld
                 _selectedSlot.Deselect();
             }
 
+            UpdateSelectedSlot(slot);
+        }
+
+        private void UpdateSelectedSlot(InventorySlot slot)
+        {
             _selectedSlot = slot;
+            var slotData = _selectedSlot != null ? _selectedSlot.Data : null;
 
-            if (slot.Data is CubitData cubitData)
+            if (slotData == null)
             {
-                UpdateSelectedSlot(cubitData);
+                _shapeBuilder.ChangeCubit(null);
             }
-            else
+            else if(slotData is CubitData cubitData)
             {
-                UpdateSelectedSlot(null);
+                _shapeBuilder.ChangeCubit(cubitData);
             }
 
-            if (slot.Data == null)
+            if (slotData == null || slotData is not CubitData)
             {
                 return;
             }
 
             _selectedSlot.Select();
-        }
-
-        private void UpdateSelectedSlot(CubitData cubitData)
-        {
-            _shapeBuilder.ChangeCubit(cubitData);
         }
 
         private void Open()
